@@ -464,7 +464,7 @@ export default function ClientDashboard() {
   console.log("Rendering dashboard with profile data:", profileData);
 
   return (
-    <div className="min-h-screen bg-gray-50 mt-50">
+    <div className="min-h-screen bg-gray-50 mt-51">
       {/* Mobile Navigation */}
       <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-50">
         <div className="flex justify-around items-center h-16">
