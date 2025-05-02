@@ -278,7 +278,7 @@ export default function Explore() {
 
   return (
     <div className="min-h-screen bg-white py-6 sm:py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-7xl mx-auto">
+      <div className="max-w-7xl mx-auto mt-14">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
