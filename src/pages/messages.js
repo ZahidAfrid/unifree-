@@ -1,12 +1,36 @@
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/router";
 import { motion, AnimatePresence } from "framer-motion";
-import { supabase } from "@/lib/supabaseClient";
+import { db } from "@/lib/firebaseClient";
+import {
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  setDoc,
+  updateDoc,
+  query,
+  where,
+  orderBy,
+  onSnapshot,
+  addDoc,
+} from "firebase/firestore";
+
 import { useAuth } from "@/contexts/AuthContext";
-import { FiMessageSquare, FiSend, FiSearch, FiUser, FiBriefcase, FiPaperclip, FiSmile, FiImage, FiX } from "react-icons/fi";
+import {
+  FiMessageSquare,
+  FiSend,
+  FiSearch,
+  FiUser,
+  FiBriefcase,
+  FiPaperclip,
+  FiSmile,
+  FiImage,
+  FiX,
+} from "react-icons/fi";
 import toast from "react-hot-toast";
 import Head from "next/head";
-import Image from 'next/image';
+import Image from "next/image";
 
 export default function Messages() {
   const router = useRouter();
@@ -48,15 +72,25 @@ export default function Messages() {
       fetchMessages();
       markMessagesAsRead();
     }
-  }, [selectedConversation, fetchMessages, markMessagesAsRead, typingTimeout, user?.id]);
+  }, [
+    selectedConversation,
+    fetchMessages,
+    markMessagesAsRead,
+    typingTimeout,
+    user?.id,
+  ]);
 
   useEffect(() => {
     if (searchTerm) {
       const filtered = conversations.filter((conv) => {
         const otherUser = conv.user1_id === user?.id ? conv.user2 : conv.user1;
         return (
-          otherUser.full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          (conv.project?.title || "").toLowerCase().includes(searchTerm.toLowerCase())
+          otherUser.full_name
+            .toLowerCase()
+            .includes(searchTerm.toLowerCase()) ||
+          (conv.project?.title || "")
+            .toLowerCase()
+            .includes(searchTerm.toLowerCase())
         );
       });
       setFilteredConversations(filtered);
@@ -67,20 +101,20 @@ export default function Messages() {
 
   const fetchUnreadCounts = async () => {
     try {
-      const { data, error } = await supabase
-        .from("messages")
-        .select("conversation_id, count")
-        .eq("receiver_id", user.id)
-        .eq("read", false)
-        .group("conversation_id");
+      const q = query(
+        collection(db, "messages"),
+        where("receiver_id", "==", user.uid),
+        where("read", "==", false)
+      );
+      const snapshot = await getDocs(q);
 
-      if (error) throw error;
-      
       const counts = {};
-      data.forEach(item => {
-        counts[item.conversation_id] = item.count;
+      snapshot.docs.forEach((docSnap) => {
+        const data = docSnap.data();
+        const convId = data.conversation_id;
+        counts[convId] = (counts[convId] || 0) + 1;
       });
-      
+
       setUnreadCounts(counts);
     } catch (error) {
       console.error("Error fetching unread counts:", error);
@@ -89,23 +123,42 @@ export default function Messages() {
 
   const fetchConversations = async () => {
     try {
-      const { data, error } = await supabase
-        .from("conversations")
-        .select(`
-          *,
-          user1:user1_id (id, username, full_name, avatar_url),
-          user2:user2_id (id, username, full_name, avatar_url),
-          project:project_id (id, title)
-        `)
-        .or(`user1_id.eq.${user.id},user2_id.eq.${user.id}`)
-        .order("updated_at", { ascending: false });
+      const q = query(
+        collection(db, "conversations"),
+        where("participants", "array-contains", user.uid),
+        orderBy("updated_at", "desc")
+      );
+      const snapshot = await getDocs(q);
+      const results = [];
 
-      if (error) throw error;
-      setConversations(data || []);
-      setFilteredConversations(data || []);
+      for (const docSnap of snapshot.docs) {
+        const data = docSnap.data();
+        const otherUserId =
+          data.user1_id === user.uid ? data.user2_id : data.user1_id;
+
+        const otherUserRef = doc(db, "profiles", otherUserId);
+        const otherUserSnap = await getDoc(otherUserRef);
+        const otherUserData = otherUserSnap.exists()
+          ? otherUserSnap.data()
+          : {};
+
+        const projectRef = doc(db, "projects", data.project_id);
+        const projectSnap = await getDoc(projectRef);
+        const projectData = projectSnap.exists() ? projectSnap.data() : {};
+
+        results.push({
+          id: docSnap.id,
+          ...data,
+          user1: data.user1_id === user.uid ? user : otherUserData,
+          user2: data.user2_id === user.uid ? user : otherUserData,
+          project: projectData,
+        });
+      }
+
+      setConversations(results);
+      setFilteredConversations(results);
     } catch (error) {
       console.error("Error fetching conversations:", error);
-      toast.error("Failed to load conversations");
     } finally {
       setLoading(false);
     }
@@ -113,38 +166,36 @@ export default function Messages() {
 
   const fetchMessages = async () => {
     try {
-      const { data, error } = await supabase
-        .from("messages")
-        .select(`
-          *,
-          sender:sender_id (id, username, full_name, avatar_url)
-        `)
-        .eq("conversation_id", selectedConversation.id)
-        .order("created_at", { ascending: true });
-
-      if (error) throw error;
-      setMessages(data || []);
+      const q = query(
+        collection(db, "messages"),
+        where("conversation_id", "==", selectedConversation.id),
+        orderBy("created_at", "asc")
+      );
+      const snapshot = await getDocs(q);
+      const msgs = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+      setMessages(msgs);
     } catch (error) {
       console.error("Error fetching messages:", error);
-      toast.error("Failed to load messages");
     }
   };
 
   const markMessagesAsRead = async () => {
     try {
-      const { error } = await supabase
-        .from("messages")
-        .update({ read: true })
-        .eq("conversation_id", selectedConversation.id)
-        .eq("receiver_id", user.id)
-        .eq("read", false);
+      const q = query(
+        collection(db, "messages"),
+        where("conversation_id", "==", selectedConversation.id),
+        where("receiver_id", "==", user.uid),
+        where("read", "==", false)
+      );
+      const unreadSnap = await getDocs(q);
 
-      if (error) throw error;
-      
-      // Update unread counts
-      setUnreadCounts(prev => ({
+      for (const docSnap of unreadSnap.docs) {
+        await updateDoc(doc(db, "messages", docSnap.id), { read: true });
+      }
+
+      setUnreadCounts((prev) => ({
         ...prev,
-        [selectedConversation.id]: 0
+        [selectedConversation.id]: 0,
       }));
     } catch (error) {
       console.error("Error marking messages as read:", error);
@@ -157,77 +208,73 @@ export default function Messages() {
 
     try {
       const otherUser = getOtherUser(selectedConversation);
-      
-      const { error } = await supabase.from("messages").insert([
-        {
-          conversation_id: selectedConversation.id,
-          sender_id: user.id,
-          receiver_id: otherUser.id,
-          content: newMessage,
-          read: false
-        },
-      ]);
+      await addDoc(collection(db, "messages"), {
+        conversation_id: selectedConversation.id,
+        sender_id: user.uid,
+        receiver_id: otherUser.id,
+        content: newMessage,
+        read: false,
+        created_at: new Date(),
+      });
 
-      if (error) throw error;
-
-      // Update conversation's updated_at timestamp
-      const { error: updateError } = await supabase
-        .from("conversations")
-        .update({ updated_at: new Date().toISOString() })
-        .eq("id", selectedConversation.id);
-
-      if (updateError) throw updateError;
+      await updateDoc(doc(db, "conversations", selectedConversation.id), {
+        updated_at: new Date(),
+      });
 
       setNewMessage("");
       fetchMessages();
     } catch (error) {
       console.error("Error sending message:", error);
-      toast.error("Failed to send message");
     }
   };
 
   const handleTyping = () => {
-    if (selectedConversation) {
-      const otherUser = getOtherUser(selectedConversation);
-      supabase
-        .channel(`typing:${selectedConversation.id}`)
-        .send({
-          type: "broadcast",
-          event: "typing",
-          payload: { userId: user.id, userName: user.user_metadata?.full_name }
-        });
-    }
+    // (Optional) You can implement this later using Firestore or Firebase Realtime DB
   };
 
   const handleFileUpload = (e) => {
     const file = e.target.files[0];
     if (!file) return;
-    
+
     // Handle file upload logic here
     toast.success("File upload feature coming soon!");
   };
 
   const getOtherUser = (conversation) => {
-    return conversation.user1_id === user?.id ? conversation.user2 : conversation.user1;
+    return conversation.user1_id === user?.id
+      ? conversation.user2
+      : conversation.user1;
   };
 
   const formatMessageTime = (timestamp) => {
     const date = new Date(timestamp);
     const now = new Date();
     const diff = now - date;
-    
+
     // If message is from today, show time only
     if (diff < 24 * 60 * 60 * 1000 && date.getDate() === now.getDate()) {
-      return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      return date.toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+      });
     }
-    
+
     // If message is from this week, show day name
     if (diff < 7 * 24 * 60 * 60 * 1000) {
-      return date.toLocaleDateString([], { weekday: 'short', hour: '2-digit', minute: '2-digit' });
+      return date.toLocaleDateString([], {
+        weekday: "short",
+        hour: "2-digit",
+        minute: "2-digit",
+      });
     }
-    
+
     // Otherwise show full date
-    return date.toLocaleDateString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+    return date.toLocaleDateString([], {
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
   };
 
   if (loading) {
@@ -256,7 +303,7 @@ export default function Messages() {
               {/* Conversations List */}
               <AnimatePresence>
                 {(showConversationList || window.innerWidth >= 768) && (
-                  <motion.div 
+                  <motion.div
                     initial={{ x: -300, opacity: 0 }}
                     animate={{ x: 0, opacity: 1 }}
                     exit={{ x: -300, opacity: 0 }}
@@ -265,9 +312,11 @@ export default function Messages() {
                   >
                     <div className="p-4 border-b border-gray-200">
                       <div className="flex items-center justify-between">
-                        <h1 className="text-2xl font-bold text-gray-900">Messages</h1>
+                        <h1 className="text-2xl font-bold text-gray-900">
+                          Messages
+                        </h1>
                         {window.innerWidth < 768 && selectedConversation && (
-                          <button 
+                          <button
                             onClick={() => setShowConversationList(false)}
                             className="md:hidden text-gray-500 hover:text-gray-700"
                           >
@@ -296,8 +345,9 @@ export default function Messages() {
                       ) : (
                         filteredConversations.map((conversation) => {
                           const otherUser = getOtherUser(conversation);
-                          const unreadCount = unreadCounts[conversation.id] || 0;
-                          
+                          const unreadCount =
+                            unreadCounts[conversation.id] || 0;
+
                           return (
                             <div
                               key={conversation.id}
@@ -316,7 +366,10 @@ export default function Messages() {
                               <div className="flex items-center">
                                 <div className="relative">
                                   <Image
-                                    src={otherUser.avatar_url || '/images/default-avatar.png'}
+                                    src={
+                                      otherUser.avatar_url ||
+                                      "/images/default-avatar.png"
+                                    }
                                     alt={otherUser.full_name}
                                     width={40}
                                     height={40}
@@ -334,7 +387,9 @@ export default function Messages() {
                                       {otherUser.full_name}
                                     </p>
                                     <p className="text-xs text-gray-500">
-                                      {new Date(conversation.updated_at).toLocaleDateString()}
+                                      {new Date(
+                                        conversation.updated_at
+                                      ).toLocaleDateString()}
                                     </p>
                                   </div>
                                   {conversation.project && (
@@ -361,7 +416,7 @@ export default function Messages() {
                     <div className="p-4 border-b border-gray-200">
                       <div className="flex items-center">
                         {window.innerWidth < 768 && (
-                          <button 
+                          <button
                             onClick={() => setShowConversationList(true)}
                             className="mr-3 text-gray-500 hover:text-gray-700"
                           >
@@ -399,7 +454,9 @@ export default function Messages() {
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ duration: 0.2 }}
                           className={`flex ${
-                            message.sender_id === user?.id ? "justify-end" : "justify-start"
+                            message.sender_id === user?.id
+                              ? "justify-end"
+                              : "justify-start"
                           }`}
                         >
                           <div
@@ -426,10 +483,13 @@ export default function Messages() {
                       <div ref={messagesEndRef} />
                     </div>
                     <div className="p-4 border-t border-gray-200">
-                      <form onSubmit={handleSendMessage} className="flex items-center">
+                      <form
+                        onSubmit={handleSendMessage}
+                        className="flex items-center"
+                      >
                         <div className="flex-1 flex items-center bg-gray-100 rounded-lg px-3 py-2">
-                          <button 
-                            type="button" 
+                          <button
+                            type="button"
                             onClick={() => fileInputRef.current?.click()}
                             className="text-gray-500 hover:text-gray-700 mr-2"
                           >
@@ -445,13 +505,13 @@ export default function Messages() {
                             className="flex-1 bg-transparent border-0 focus:ring-0 text-sm"
                             placeholder="Type a message..."
                           />
-                          <button 
+                          <button
                             type="button"
                             className="text-gray-500 hover:text-gray-700 mx-2"
                           >
                             <FiSmile size={20} />
                           </button>
-                          <button 
+                          <button
                             type="button"
                             onClick={() => fileInputRef.current?.click()}
                             className="text-gray-500 hover:text-gray-700"
@@ -479,7 +539,9 @@ export default function Messages() {
                   <div className="flex-1 flex items-center justify-center">
                     <div className="text-center">
                       <FiMessageSquare className="mx-auto h-12 w-12 text-gray-400" />
-                      <h3 className="mt-2 text-sm font-medium text-gray-900">No conversation selected</h3>
+                      <h3 className="mt-2 text-sm font-medium text-gray-900">
+                        No conversation selected
+                      </h3>
                       <p className="mt-1 text-sm text-gray-500">
                         Select a conversation from the list to start messaging
                       </p>
@@ -493,4 +555,4 @@ export default function Messages() {
       </div>
     </>
   );
-} 
+}

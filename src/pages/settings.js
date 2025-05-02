@@ -2,8 +2,19 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import Layout from "../components/Layout";
 import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/lib/supabaseClient";
-import { FiUser, FiBell, FiLock, FiMail, FiGlobe, FiEye, FiEyeOff } from "react-icons/fi";
+import { doc, getDoc, updateDoc } from "firebase/firestore";
+import { updatePassword } from "firebase/auth";
+import { auth } from "@/lib/firebaseClient";
+import { db } from "@/firebase/firebase.config";
+import {
+  FiUser,
+  FiBell,
+  FiLock,
+  FiMail,
+  FiGlobe,
+  FiEye,
+  FiEyeOff,
+} from "react-icons/fi";
 import { FaRocket } from "react-icons/fa";
 
 export default function Settings() {
@@ -22,7 +33,7 @@ export default function Settings() {
     theme: "light",
     emailNotifications: true,
     pushNotifications: true,
-    marketingEmails: false
+    marketingEmails: false,
   });
 
   useEffect(() => {
@@ -33,37 +44,34 @@ export default function Settings() {
 
   const loadUserSettings = async () => {
     try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', user.id)
-        .single();
+      const docRef = doc(db, "profiles", user.uid);
+      const docSnap = await getDoc(docRef);
 
-      if (error) throw error;
+      if (!docSnap.exists()) return;
 
-      if (data) {
-        setFormData(prev => ({
-          ...prev,
-          fullName: data.full_name || "",
-          username: data.username || "",
-          email: data.email || "",
-          language: data.language || "en",
-          theme: data.theme || "light",
-          emailNotifications: data.email_notifications ?? true,
-          pushNotifications: data.push_notifications ?? true,
-          marketingEmails: data.marketing_emails ?? false
-        }));
-      }
+      const data = docSnap.data();
+
+      setFormData((prev) => ({
+        ...prev,
+        fullName: data.full_name || "",
+        username: data.username || "",
+        email: user.email || "", // from Firebase Auth
+        language: data.language || "en",
+        theme: data.theme || "light",
+        emailNotifications: data.email_notifications ?? true,
+        pushNotifications: data.push_notifications ?? true,
+        marketingEmails: data.marketing_emails ?? false,
+      }));
     } catch (error) {
-      console.error('Error loading user settings:', error);
+      console.error("Error loading user settings:", error);
     }
   };
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: type === 'checkbox' ? checked : value
+      [name]: type === "checkbox" ? checked : value,
     }));
   };
 
@@ -72,45 +80,32 @@ export default function Settings() {
     setLoading(true);
 
     try {
-      if (activeTab === "profile") {
-        const { error } = await supabase
-          .from('profiles')
-          .update({
-            full_name: formData.fullName,
-            username: formData.username,
-            language: formData.language,
-            theme: formData.theme
-          })
-          .eq('id', user.id);
+      const profileRef = doc(db, "profiles", user.uid);
 
-        if (error) throw error;
+      if (activeTab === "profile") {
+        await updateDoc(profileRef, {
+          full_name: formData.fullName,
+          username: formData.username,
+          language: formData.language,
+          theme: formData.theme,
+        });
       } else if (activeTab === "security") {
         if (formData.newPassword !== formData.confirmPassword) {
           throw new Error("New passwords don't match");
         }
 
-        const { error } = await supabase.auth.updateUser({
-          password: formData.newPassword
-        });
-
-        if (error) throw error;
+        await updatePassword(auth.currentUser, formData.newPassword);
       } else if (activeTab === "notifications") {
-        const { error } = await supabase
-          .from('profiles')
-          .update({
-            email_notifications: formData.emailNotifications,
-            push_notifications: formData.pushNotifications,
-            marketing_emails: formData.marketingEmails
-          })
-          .eq('id', user.id);
-
-        if (error) throw error;
+        await updateDoc(profileRef, {
+          email_notifications: formData.emailNotifications,
+          push_notifications: formData.pushNotifications,
+          marketing_emails: formData.marketingEmails,
+        });
       }
 
-      // Show success message
       alert("Settings updated successfully!");
     } catch (error) {
-      console.error('Error updating settings:', error);
+      console.error("Error updating settings:", error);
       alert(error.message);
     } finally {
       setLoading(false);
@@ -120,7 +115,7 @@ export default function Settings() {
   const tabs = [
     { id: "profile", label: "Profile", icon: <FiUser /> },
     { id: "security", label: "Security", icon: <FiLock /> },
-    { id: "notifications", label: "Notifications", icon: <FiBell /> }
+    { id: "notifications", label: "Notifications", icon: <FiBell /> },
   ];
 
   return (
@@ -146,7 +141,7 @@ export default function Settings() {
               {/* Sidebar */}
               <div className="w-full md:w-64 bg-gray-50 p-4">
                 <nav className="space-y-2">
-                  {tabs.map(tab => (
+                  {tabs.map((tab) => (
                     <button
                       key={tab.id}
                       onClick={() => setActiveTab(tab.id)}
@@ -280,8 +275,12 @@ export default function Settings() {
                       <div className="space-y-4">
                         <div className="flex items-center justify-between">
                           <div>
-                            <h3 className="text-lg font-medium text-gray-900">Email Notifications</h3>
-                            <p className="text-sm text-gray-500">Receive email notifications about your account</p>
+                            <h3 className="text-lg font-medium text-gray-900">
+                              Email Notifications
+                            </h3>
+                            <p className="text-sm text-gray-500">
+                              Receive email notifications about your account
+                            </p>
                           </div>
                           <label className="relative inline-flex items-center cursor-pointer">
                             <input
@@ -296,8 +295,12 @@ export default function Settings() {
                         </div>
                         <div className="flex items-center justify-between">
                           <div>
-                            <h3 className="text-lg font-medium text-gray-900">Push Notifications</h3>
-                            <p className="text-sm text-gray-500">Receive push notifications about your account</p>
+                            <h3 className="text-lg font-medium text-gray-900">
+                              Push Notifications
+                            </h3>
+                            <p className="text-sm text-gray-500">
+                              Receive push notifications about your account
+                            </p>
                           </div>
                           <label className="relative inline-flex items-center cursor-pointer">
                             <input
@@ -312,8 +315,12 @@ export default function Settings() {
                         </div>
                         <div className="flex items-center justify-between">
                           <div>
-                            <h3 className="text-lg font-medium text-gray-900">Marketing Emails</h3>
-                            <p className="text-sm text-gray-500">Receive marketing and promotional emails</p>
+                            <h3 className="text-lg font-medium text-gray-900">
+                              Marketing Emails
+                            </h3>
+                            <p className="text-sm text-gray-500">
+                              Receive marketing and promotional emails
+                            </p>
                           </div>
                           <label className="relative inline-flex items-center cursor-pointer">
                             <input
@@ -356,4 +363,4 @@ export default function Settings() {
       </div>
     </Layout>
   );
-} 
+}

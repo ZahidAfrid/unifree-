@@ -1,9 +1,16 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import { motion } from "framer-motion";
-import { supabase } from "@/lib/supabaseClient";
+import { db } from "@/firebase/firebase.config";
 import { useAuth } from "@/contexts/AuthContext";
-import { FiBell, FiCheck, FiX, FiMessageSquare, FiBriefcase, FiTrash2 } from "react-icons/fi";
+import {
+  FiBell,
+  FiCheck,
+  FiX,
+  FiMessageSquare,
+  FiBriefcase,
+  FiTrash2,
+} from "react-icons/fi";
 import toast from "react-hot-toast";
 
 export default function NotificationsPage() {
@@ -27,24 +34,25 @@ export default function NotificationsPage() {
 
     // Set up real-time subscription
     const subscription = supabase
-      .channel('notifications')
-      .on('postgres_changes', 
-        { 
-          event: '*', 
-          schema: 'public', 
-          table: 'notifications',
-          filter: `user_id=eq.${user.id}`
-        }, 
+      .channel("notifications")
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "notifications",
+          filter: `user_id=eq.${user.id}`,
+        },
         (payload) => {
-          if (payload.eventType === 'INSERT') {
-            setNotifications(prev => [payload.new, ...prev]);
-          } else if (payload.eventType === 'UPDATE') {
-            setNotifications(prev => 
-              prev.map(n => n.id === payload.new.id ? payload.new : n)
+          if (payload.eventType === "INSERT") {
+            setNotifications((prev) => [payload.new, ...prev]);
+          } else if (payload.eventType === "UPDATE") {
+            setNotifications((prev) =>
+              prev.map((n) => (n.id === payload.new.id ? payload.new : n))
             );
-          } else if (payload.eventType === 'DELETE') {
-            setNotifications(prev => 
-              prev.filter(n => n.id !== payload.old.id)
+          } else if (payload.eventType === "DELETE") {
+            setNotifications((prev) =>
+              prev.filter((n) => n.id !== payload.old.id)
             );
           }
         }
@@ -58,16 +66,18 @@ export default function NotificationsPage() {
 
   const fetchNotifications = async () => {
     if (!user) return;
-    
+
     try {
       setLoading(true);
       let query = supabase
         .from("notifications")
-        .select(`
+        .select(
+          `
           *,
           project:project_id (id, title),
           sender:sender_id (id, username, full_name, avatar_url)
-        `)
+        `
+        )
         .eq("user_id", user.id)
         .order("created_at", { ascending: false });
 
@@ -99,9 +109,7 @@ export default function NotificationsPage() {
       if (error) throw error;
 
       setNotifications((prev) =>
-        prev.map((n) =>
-          n.id === notificationId ? { ...n, read: true } : n
-        )
+        prev.map((n) => (n.id === notificationId ? { ...n, read: true } : n))
       );
       toast.success("Notification marked as read");
     } catch (error) {
@@ -120,9 +128,7 @@ export default function NotificationsPage() {
 
       if (error) throw error;
 
-      setNotifications((prev) =>
-        prev.map((n) => ({ ...n, read: true }))
-      );
+      setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
       toast.success("All notifications marked as read");
     } catch (error) {
       console.error("Error marking notifications as read:", error);
@@ -139,9 +145,7 @@ export default function NotificationsPage() {
 
       if (error) throw error;
 
-      setNotifications((prev) =>
-        prev.filter((n) => n.id !== notificationId)
-      );
+      setNotifications((prev) => prev.filter((n) => n.id !== notificationId));
       toast.success("Notification deleted");
     } catch (error) {
       console.error("Error deleting notification:", error);
@@ -234,7 +238,9 @@ export default function NotificationsPage() {
         >
           <div className="p-6">
             <div className="flex items-center justify-between">
-              <h1 className="text-2xl font-bold text-gray-900">Notifications</h1>
+              <h1 className="text-2xl font-bold text-gray-900">
+                Notifications
+              </h1>
               <div className="flex items-center space-x-2">
                 <select
                   value={filter}
@@ -260,7 +266,9 @@ export default function NotificationsPage() {
             {notifications.length === 0 ? (
               <div className="mt-8 text-center py-12">
                 <FiBell className="mx-auto h-12 w-12 text-gray-400" />
-                <h3 className="mt-2 text-sm font-medium text-gray-900">No notifications</h3>
+                <h3 className="mt-2 text-sm font-medium text-gray-900">
+                  No notifications
+                </h3>
                 <p className="text-gray-600 dark:text-gray-300">
                   You&apos;re all caught up! No new notifications.
                 </p>
@@ -270,12 +278,12 @@ export default function NotificationsPage() {
                 {notifications.map((notification) => (
                   <div
                     key={notification.id}
-                    className={`py-4 ${
-                      !notification.read ? "bg-blue-50" : ""
-                    }`}
+                    className={`py-4 ${!notification.read ? "bg-blue-50" : ""}`}
                   >
                     <div className="flex items-start">
-                      <div className="flex-shrink-0">{getNotificationIcon(notification.type)}</div>
+                      <div className="flex-shrink-0">
+                        {getNotificationIcon(notification.type)}
+                      </div>
                       <div className="ml-3 flex-1">
                         <div className="flex items-center justify-between">
                           <p className="text-sm font-medium text-gray-900">
@@ -291,7 +299,9 @@ export default function NotificationsPage() {
                               </button>
                             )}
                             <button
-                              onClick={() => deleteNotification(notification.id)}
+                              onClick={() =>
+                                deleteNotification(notification.id)
+                              }
                               className="text-xs text-red-600 hover:text-red-800"
                             >
                               Delete
@@ -299,7 +309,9 @@ export default function NotificationsPage() {
                           </div>
                         </div>
                         <div className="mt-1 flex items-center text-xs text-gray-500">
-                          <span>{new Date(notification.created_at).toLocaleString()}</span>
+                          <span>
+                            {new Date(notification.created_at).toLocaleString()}
+                          </span>
                           {notification.project && (
                             <>
                               <span className="mx-2">•</span>
@@ -312,7 +324,9 @@ export default function NotificationsPage() {
                         </div>
                         <div className="mt-2">
                           <button
-                            onClick={() => handleNotificationClick(notification)}
+                            onClick={() =>
+                              handleNotificationClick(notification)
+                            }
                             className="text-sm text-blue-600 hover:text-blue-800"
                           >
                             View details
@@ -329,4 +343,4 @@ export default function NotificationsPage() {
       </div>
     </div>
   );
-} 
+}

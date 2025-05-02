@@ -3,8 +3,15 @@ import { useRouter } from "next/router";
 import { motion } from "framer-motion";
 import Layout from "../components/Layout";
 import { FiSearch, FiFilter, FiStar, FiBriefcase } from "react-icons/fi";
-import { FaCode, FaPaintBrush, FaCamera, FaVideo, FaMusic, FaPen } from "react-icons/fa";
-import { supabase } from "@/lib/supabaseClient";
+import {
+  FaCode,
+  FaPaintBrush,
+  FaCamera,
+  FaVideo,
+  FaMusic,
+  FaPen,
+} from "react-icons/fa";
+import { db } from "@/firebase/firebase.config";
 
 export default function Search() {
   const router = useRouter();
@@ -14,7 +21,7 @@ export default function Search() {
   const [filters, setFilters] = useState({
     type: "all",
     category: "all",
-    sortBy: "recent"
+    sortBy: "recent",
   });
 
   useEffect(() => {
@@ -26,17 +33,17 @@ export default function Search() {
   const performSearch = async () => {
     setLoading(true);
     try {
-      let query = supabase.from('projects').select(`
+      let query = supabase.from("projects").select(`
         *,
         profiles:client_id (username, full_name, avatar_url)
       `);
 
-      if (filters.type === 'projects') {
-        query = query.eq('status', 'open');
+      if (filters.type === "projects") {
+        query = query.eq("status", "open");
       }
 
-      if (filters.category !== 'all') {
-        query = query.eq('category', filters.category);
+      if (filters.category !== "all") {
+        query = query.eq("category", filters.category);
       }
 
       if (q) {
@@ -44,14 +51,14 @@ export default function Search() {
       }
 
       switch (filters.sortBy) {
-        case 'recent':
-          query = query.order('created_at', { ascending: false });
+        case "recent":
+          query = query.order("created_at", { ascending: false });
           break;
-        case 'budget-high':
-          query = query.order('budget', { ascending: false });
+        case "budget-high":
+          query = query.order("budget", { ascending: false });
           break;
-        case 'budget-low':
-          query = query.order('budget', { ascending: true });
+        case "budget-low":
+          query = query.order("budget", { ascending: true });
           break;
       }
 
@@ -60,7 +67,7 @@ export default function Search() {
       if (error) throw error;
       setSearchResults(data || []);
     } catch (error) {
-      console.error('Error performing search:', error);
+      console.error("Error performing search:", error);
     } finally {
       setLoading(false);
     }
@@ -68,17 +75,25 @@ export default function Search() {
 
   const getSkillIcon = (skill) => {
     const lowerSkill = skill.toLowerCase();
-    if (lowerSkill.includes('web') || lowerSkill.includes('code') || lowerSkill.includes('programming')) {
+    if (
+      lowerSkill.includes("web") ||
+      lowerSkill.includes("code") ||
+      lowerSkill.includes("programming")
+    ) {
       return <FaCode className="mr-2" />;
-    } else if (lowerSkill.includes('design') || lowerSkill.includes('ui') || lowerSkill.includes('ux')) {
+    } else if (
+      lowerSkill.includes("design") ||
+      lowerSkill.includes("ui") ||
+      lowerSkill.includes("ux")
+    ) {
       return <FaPaintBrush className="mr-2" />;
-    } else if (lowerSkill.includes('photo') || lowerSkill.includes('image')) {
+    } else if (lowerSkill.includes("photo") || lowerSkill.includes("image")) {
       return <FaCamera className="mr-2" />;
-    } else if (lowerSkill.includes('video') || lowerSkill.includes('film')) {
+    } else if (lowerSkill.includes("video") || lowerSkill.includes("film")) {
       return <FaVideo className="mr-2" />;
-    } else if (lowerSkill.includes('music') || lowerSkill.includes('audio')) {
+    } else if (lowerSkill.includes("music") || lowerSkill.includes("audio")) {
       return <FaMusic className="mr-2" />;
-    } else if (lowerSkill.includes('write') || lowerSkill.includes('content')) {
+    } else if (lowerSkill.includes("write") || lowerSkill.includes("content")) {
       return <FaPen className="mr-2" />;
     }
     return null;
@@ -112,7 +127,9 @@ export default function Search() {
                 </label>
                 <select
                   value={filters.type}
-                  onChange={(e) => setFilters({ ...filters, type: e.target.value })}
+                  onChange={(e) =>
+                    setFilters({ ...filters, type: e.target.value })
+                  }
                   className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                 >
                   <option value="all">All</option>
@@ -126,7 +143,9 @@ export default function Search() {
                 </label>
                 <select
                   value={filters.category}
-                  onChange={(e) => setFilters({ ...filters, category: e.target.value })}
+                  onChange={(e) =>
+                    setFilters({ ...filters, category: e.target.value })
+                  }
                   className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                 >
                   <option value="all">All Categories</option>
@@ -142,7 +161,9 @@ export default function Search() {
                 </label>
                 <select
                   value={filters.sortBy}
-                  onChange={(e) => setFilters({ ...filters, sortBy: e.target.value })}
+                  onChange={(e) =>
+                    setFilters({ ...filters, sortBy: e.target.value })
+                  }
                   className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                 >
                   <option value="recent">Most Recent</option>
@@ -209,4 +230,4 @@ export default function Search() {
       </div>
     </Layout>
   );
-} 
+}

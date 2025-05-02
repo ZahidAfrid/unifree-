@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/lib/supabaseClient";
+import { db } from "@/firebase/firebase.config";
 import toast from "react-hot-toast";
 import { motion } from "framer-motion";
-import Image from 'next/image';
+import Image from "next/image";
 
 export default function FreelancerProfile() {
   const router = useRouter();
@@ -25,7 +25,13 @@ export default function FreelancerProfile() {
       fetchFreelancerProfile();
       fetchFreelancerSkills();
     }
-  }, [user, fetchUserProfile, fetchFreelancerProfile, fetchFreelancerSkills, router]);
+  }, [
+    user,
+    fetchUserProfile,
+    fetchFreelancerProfile,
+    fetchFreelancerSkills,
+    router,
+  ]);
 
   // Fetch User Profile
   const fetchUserProfile = async () => {
@@ -113,7 +119,7 @@ export default function FreelancerProfile() {
           <div className="flex items-center gap-4">
             <div className="w-20 h-20 rounded-full bg-gray-200 overflow-hidden">
               <Image
-                src={profile?.avatar_url || '/images/default-avatar.png'}
+                src={profile?.avatar_url || "/images/default-avatar.png"}
                 alt={profile?.full_name}
                 width={80}
                 height={80}
@@ -122,8 +128,12 @@ export default function FreelancerProfile() {
             </div>
 
             <div>
-              <h1 className="text-2xl font-bold">{profile?.full_name || "No Name"}</h1>
-              <p className="text-gray-500">{freelancerProfile?.title || "No title added"}</p>
+              <h1 className="text-2xl font-bold">
+                {profile?.full_name || "No Name"}
+              </h1>
+              <p className="text-gray-500">
+                {freelancerProfile?.title || "No title added"}
+              </p>
             </div>
           </div>
 
@@ -142,11 +152,28 @@ export default function FreelancerProfile() {
         <div className="mt-6 border-t pt-4">
           <h2 className="text-lg font-semibold mb-4">Professional Details</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-gray-700">
-            <p><strong>Hourly Rate:</strong> {freelancerProfile?.hourly_rate ? `$${freelancerProfile.hourly_rate}` : "Not specified"}</p>
-            <p><strong>Experience Level:</strong> {freelancerProfile?.experience_level || "Not specified"}</p>
-            <p><strong>University:</strong> {freelancerProfile?.university || "Not specified"}</p>
-            <p><strong>Department:</strong> {freelancerProfile?.department || "Not specified"}</p>
-            <p><strong>Graduation Year:</strong> {freelancerProfile?.graduation_year || "Not specified"}</p>
+            <p>
+              <strong>Hourly Rate:</strong>{" "}
+              {freelancerProfile?.hourly_rate
+                ? `$${freelancerProfile.hourly_rate}`
+                : "Not specified"}
+            </p>
+            <p>
+              <strong>Experience Level:</strong>{" "}
+              {freelancerProfile?.experience_level || "Not specified"}
+            </p>
+            <p>
+              <strong>University:</strong>{" "}
+              {freelancerProfile?.university || "Not specified"}
+            </p>
+            <p>
+              <strong>Department:</strong>{" "}
+              {freelancerProfile?.department || "Not specified"}
+            </p>
+            <p>
+              <strong>Graduation Year:</strong>{" "}
+              {freelancerProfile?.graduation_year || "Not specified"}
+            </p>
           </div>
         </div>
 

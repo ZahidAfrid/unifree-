@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { supabase } from "@/lib/supabaseClient";
+import { db } from "@/fireabse/firebase.config";
 import { useRouter } from "next/router";
 import toast from "react-hot-toast";
 import { motion } from "framer-motion";
@@ -18,7 +18,9 @@ export default function EditProfileForm({ user, profile, freelancerProfile }) {
   });
 
   const [avatarFile, setAvatarFile] = useState(null);
-  const [avatarPreview, setAvatarPreview] = useState(profile?.avatar_url || null);
+  const [avatarPreview, setAvatarPreview] = useState(
+    profile?.avatar_url || null
+  );
   const [skills, setSkills] = useState(freelancerProfile?.skills || []);
   const [newSkill, setNewSkill] = useState("");
 
@@ -98,17 +100,23 @@ export default function EditProfileForm({ user, profile, freelancerProfile }) {
 
       if (profileError) throw profileError;
 
-      const { error: freelancerError } = await supabase.from("freelancer_profiles").upsert({
-        user_id: user.id,
-        title: formData.title,
-        description: formData.description,
-        hourly_rate: formData.hourly_rate ? parseFloat(formData.hourly_rate) : null,
-        university: formData.university,
-        department: formData.department,
-        graduation_year: formData.graduation_year ? parseInt(formData.graduation_year) : null,
-        experience_level: formData.experience_level,
-        updated_at: new Date().toISOString(),
-      });
+      const { error: freelancerError } = await supabase
+        .from("freelancer_profiles")
+        .upsert({
+          user_id: user.id,
+          title: formData.title,
+          description: formData.description,
+          hourly_rate: formData.hourly_rate
+            ? parseFloat(formData.hourly_rate)
+            : null,
+          university: formData.university,
+          department: formData.department,
+          graduation_year: formData.graduation_year
+            ? parseInt(formData.graduation_year)
+            : null,
+          experience_level: formData.experience_level,
+          updated_at: new Date().toISOString(),
+        });
 
       if (freelancerError) throw freelancerError;
 
@@ -128,49 +136,69 @@ export default function EditProfileForm({ user, profile, freelancerProfile }) {
       className="min-h-screen flex justify-center items-center bg-gray-100 p-4"
     >
       <div className="max-w-3xl w-full bg-white rounded-lg shadow-lg p-8">
-        <h2 className="text-2xl font-bold text-center mb-6">Edit Your Profile</h2>
-        
+        <h2 className="text-2xl font-bold text-center mb-6">
+          Edit Your Profile
+        </h2>
+
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Profile Image */}
           <div className="flex items-center gap-4">
             <div className="w-24 h-24 rounded-full bg-gray-200 overflow-hidden">
               {avatarPreview ? (
-                <img src={avatarPreview} alt="Avatar Preview" className="w-full h-full object-cover" />
+                <img
+                  src={avatarPreview}
+                  alt="Avatar Preview"
+                  className="w-full h-full object-cover"
+                />
               ) : (
                 <div className="flex items-center justify-center h-full text-gray-600 text-xl">
                   {formData.full_name.charAt(0)}
                 </div>
               )}
             </div>
-            <input type="file" accept="image/*" onChange={handleAvatarChange} className="mt-2" />
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handleAvatarChange}
+              className="mt-2"
+            />
           </div>
 
           {/* Fields */}
-          {["full_name", "title", "description", "hourly_rate", "university", "department"].map(
-            (field, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, x: -30 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: index * 0.1 }}
-                className="w-full"
-              >
-                <label className="block text-sm font-medium text-gray-700 capitalize">{field.replace("_", " ")}</label>
-                <input
-                  type="text"
-                  name={field}
-                  value={formData[field]}
-                  onChange={handleChange}
-                  className="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500"
-                />
-              </motion.div>
-            )
-          )}
+          {[
+            "full_name",
+            "title",
+            "description",
+            "hourly_rate",
+            "university",
+            "department",
+          ].map((field, index) => (
+            <motion.div
+              key={index}
+              initial={{ opacity: 0, x: -30 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: index * 0.1 }}
+              className="w-full"
+            >
+              <label className="block text-sm font-medium text-gray-700 capitalize">
+                {field.replace("_", " ")}
+              </label>
+              <input
+                type="text"
+                name={field}
+                value={formData[field]}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500"
+              />
+            </motion.div>
+          ))}
 
           {/* Dropdowns */}
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700">Experience Level</label>
+              <label className="block text-sm font-medium text-gray-700">
+                Experience Level
+              </label>
               <select
                 name="experience_level"
                 value={formData.experience_level}
@@ -186,7 +214,9 @@ export default function EditProfileForm({ user, profile, freelancerProfile }) {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700">Graduation Year</label>
+              <label className="block text-sm font-medium text-gray-700">
+                Graduation Year
+              </label>
               <select
                 name="graduation_year"
                 value={formData.graduation_year}

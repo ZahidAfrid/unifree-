@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { supabase } from "@/lib/supabaseClient";
+import { db } from "@/firebase/firebase.config";
 import { useRouter } from "next/router";
 import toast from "react-hot-toast";
 import { motion } from "framer-motion";
@@ -129,10 +129,14 @@ export default function EditProfilePage() {
         .update({
           title: formData.title,
           description: formData.description,
-          hourly_rate: formData.hourly_rate ? parseFloat(formData.hourly_rate) : null,
+          hourly_rate: formData.hourly_rate
+            ? parseFloat(formData.hourly_rate)
+            : null,
           university: formData.university,
           department: formData.department,
-          graduation_year: formData.graduation_year ? parseInt(formData.graduation_year) : null,
+          graduation_year: formData.graduation_year
+            ? parseInt(formData.graduation_year)
+            : null,
           experience_level: formData.experience_level,
           updated_at: new Date().toISOString(),
         })
@@ -174,28 +178,44 @@ export default function EditProfilePage() {
         animate={{ scale: 1, opacity: 1 }}
         transition={{ duration: 0.6, ease: "easeInOut" }}
       >
-        <h2 className="text-3xl font-bold text-center mb-6 text-gray-800">Edit Your Profile</h2>
+        <h2 className="text-3xl font-bold text-center mb-6 text-gray-800">
+          Edit Your Profile
+        </h2>
 
-        <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {["title", "description", "hourly_rate", "university", "department", "graduation_year"].map(
-            (field, index) => (
-              <motion.div key={index} className="w-full">
-                <label className="block text-sm font-semibold text-gray-700 capitalize">
-                  {field.replace("_", " ")}
-                </label>
-                <input
-                  type={field === "hourly_rate" || field === "graduation_year" ? "number" : "text"}
-                  name={field}
-                  value={formData[field]}
-                  onChange={handleChange}
-                  className="w-full px-4 py-3 border rounded-lg bg-gray-50 text-gray-700 shadow-sm hover:shadow-lg"
-                />
-              </motion.div>
-            )
-          )}
+        <form
+          onSubmit={handleSubmit}
+          className="grid grid-cols-1 md:grid-cols-2 gap-4"
+        >
+          {[
+            "title",
+            "description",
+            "hourly_rate",
+            "university",
+            "department",
+            "graduation_year",
+          ].map((field, index) => (
+            <motion.div key={index} className="w-full">
+              <label className="block text-sm font-semibold text-gray-700 capitalize">
+                {field.replace("_", " ")}
+              </label>
+              <input
+                type={
+                  field === "hourly_rate" || field === "graduation_year"
+                    ? "number"
+                    : "text"
+                }
+                name={field}
+                value={formData[field]}
+                onChange={handleChange}
+                className="w-full px-4 py-3 border rounded-lg bg-gray-50 text-gray-700 shadow-sm hover:shadow-lg"
+              />
+            </motion.div>
+          ))}
 
           <div className="md:col-span-2">
-            <label className="block text-sm font-semibold text-gray-700">Skills</label>
+            <label className="block text-sm font-semibold text-gray-700">
+              Skills
+            </label>
             <div className="flex gap-2">
               <input
                 type="text"
@@ -204,7 +224,11 @@ export default function EditProfilePage() {
                 className="flex-grow px-4 py-3 border rounded-lg bg-gray-50 text-gray-700 shadow-sm"
                 placeholder="Add a skill..."
               />
-              <button type="button" onClick={addSkill} className="px-4 py-3 bg-blue-600 text-white rounded-lg">
+              <button
+                type="button"
+                onClick={addSkill}
+                className="px-4 py-3 bg-blue-600 text-white rounded-lg"
+              >
                 Add
               </button>
             </div>
@@ -217,7 +241,10 @@ export default function EditProfilePage() {
             </div>
           </div>
 
-          <button type="submit" className="col-span-2 bg-blue-600 text-white rounded-lg py-3">
+          <button
+            type="submit"
+            className="col-span-2 bg-blue-600 text-white rounded-lg py-3"
+          >
             {loading ? "Saving..." : "Save Profile"}
           </button>
         </form>

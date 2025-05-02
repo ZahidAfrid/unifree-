@@ -1,9 +1,16 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import { motion, AnimatePresence } from "framer-motion";
-import { supabase } from "@/lib/supabaseClient";
+import { db } from "@/firebase/firebase.config";
 import { useAuth } from "@/contexts/AuthContext";
-import { FiBell, FiCheck, FiX, FiMessageSquare, FiBriefcase, FiUser } from "react-icons/fi";
+import {
+  FiBell,
+  FiCheck,
+  FiX,
+  FiMessageSquare,
+  FiBriefcase,
+  FiUser,
+} from "react-icons/fi";
 import toast from "react-hot-toast";
 
 export default function Notifications() {
@@ -25,11 +32,13 @@ export default function Notifications() {
     try {
       const { data, error } = await supabase
         .from("notifications")
-        .select(`
+        .select(
+          `
           *,
           project:project_id (id, title),
           sender:sender_id (id, username, full_name, avatar_url)
-        `)
+        `
+        )
         .eq("user_id", user?.id)
         .order("created_at", { ascending: false })
         .limit(20);
@@ -106,7 +115,9 @@ export default function Notifications() {
               <div className="flex-shrink-0 pt-0.5">{icon}</div>
               <div className="ml-3 flex-1">
                 <p className="text-sm font-medium text-gray-900">{title}</p>
-                <p className="mt-1 text-sm text-gray-500">{notification.message}</p>
+                <p className="mt-1 text-sm text-gray-500">
+                  {notification.message}
+                </p>
               </div>
             </div>
           </div>
@@ -173,9 +184,7 @@ export default function Notifications() {
 
       if (error) throw error;
 
-      setNotifications((prev) =>
-        prev.map((n) => ({ ...n, read: true }))
-      );
+      setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
       setUnreadCount(0);
       toast.success("All notifications marked as read");
     } catch (error) {
@@ -230,7 +239,9 @@ export default function Notifications() {
             >
               <div className="py-1">
                 <div className="px-4 py-2 border-b border-gray-200 flex justify-between items-center">
-                  <h3 className="text-sm font-medium text-gray-900">Notifications</h3>
+                  <h3 className="text-sm font-medium text-gray-900">
+                    Notifications
+                  </h3>
                   {unreadCount > 0 && (
                     <button
                       onClick={markAllAsRead}
@@ -259,11 +270,17 @@ export default function Notifications() {
                         }`}
                       >
                         <div className="flex items-start">
-                          <div className="flex-shrink-0">{getNotificationIcon(notification.type)}</div>
+                          <div className="flex-shrink-0">
+                            {getNotificationIcon(notification.type)}
+                          </div>
                           <div className="ml-3 w-0 flex-1">
-                            <p className="text-sm text-gray-900">{notification.message}</p>
+                            <p className="text-sm text-gray-900">
+                              {notification.message}
+                            </p>
                             <p className="mt-1 text-xs text-gray-500">
-                              {new Date(notification.created_at).toLocaleString()}
+                              {new Date(
+                                notification.created_at
+                              ).toLocaleString()}
                             </p>
                           </div>
                         </div>
@@ -288,4 +305,4 @@ export default function Notifications() {
       </AnimatePresence>
     </div>
   );
-} 
+}

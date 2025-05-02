@@ -1,5 +1,5 @@
-import { createContext, useContext, useState, useEffect } from 'react';
-import supabase from '../lib/supabaseClient';
+import { createContext, useContext, useState, useEffect } from "react";
+import { db } from "@/firebase/firebase.config";
 
 const AuthContext = createContext();
 
@@ -32,7 +32,7 @@ export function AuthProvider({ children }) {
         setLoading(false);
       }
     };
-    
+
     getInitialSession();
 
     // Cleanup subscription
@@ -45,18 +45,18 @@ export function AuthProvider({ children }) {
   const signUp = async (email, password, name) => {
     setLoading(true);
     setError(null);
-    
+
     try {
-      const { data, error } = await supabase.auth.signUp({ 
-        email, 
+      const { data, error } = await supabase.auth.signUp({
+        email,
         password,
         options: {
-          data: { full_name: name }
-        }
+          data: { full_name: name },
+        },
       });
-      
+
       if (error) throw error;
-      
+
       return data;
     } catch (error) {
       setError(error.message);
@@ -70,12 +70,15 @@ export function AuthProvider({ children }) {
   const signIn = async (email, password) => {
     setLoading(true);
     setError(null);
-    
+
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-      
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
       if (error) throw error;
-      
+
       return data;
     } catch (error) {
       setError(error.message);
@@ -89,10 +92,10 @@ export function AuthProvider({ children }) {
   const signOut = async () => {
     setLoading(true);
     setError(null);
-    
+
     try {
       const { error } = await supabase.auth.signOut();
-      
+
       if (error) throw error;
     } catch (error) {
       setError(error.message);
@@ -106,14 +109,14 @@ export function AuthProvider({ children }) {
   const resetPassword = async (email) => {
     setLoading(true);
     setError(null);
-    
+
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: `${window.location.origin}/reset-password`,
       });
-      
+
       if (error) throw error;
-      
+
       return { success: true };
     } catch (error) {
       setError(error.message);
@@ -133,9 +136,5 @@ export function AuthProvider({ children }) {
     resetPassword,
   };
 
-  return (
-    <AuthContext.Provider value={value}>
-      {children}
-    </AuthContext.Provider>
-  );
-} 
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+}
