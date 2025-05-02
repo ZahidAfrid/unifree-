@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import { motion } from "framer-motion";
-import { db } from "@/fireabse/firebaseConfig"; // Adjust the import based on your Firebase setup
+import { db } from "@/firebase/firebase.config"; // Adjust the import based on your Firebase setup
 import {
   collection,
   doc,

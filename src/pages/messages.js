@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/router";
 import { motion, AnimatePresence } from "framer-motion";
-import { db } from "@/lib/firebaseClient";
+import { db } from "@/firebase/firebase.config";
 import {
   collection,
   doc,

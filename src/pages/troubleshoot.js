@@ -1,32 +1,32 @@
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/router';
-import { useAuth } from '@/contexts/AuthContext';
-import { supabase } from '@/lib/supabaseClient';
-import { motion } from 'framer-motion';
-import toast from 'react-hot-toast';
+import { useState, useEffect } from "react";
+import { useRouter } from "next/router";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/firebase/firebase.config";
+import { motion } from "framer-motion";
+import toast from "react-hot-toast";
 
 export default function Troubleshoot() {
   const router = useRouter();
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [status, setStatus] = useState({
-    connection: 'checking',
+    connection: "checking",
     tablesExist: {
-      profiles: 'checking',
-      freelancer_profiles: 'checking',
-      freelancer_education: 'checking',
-      freelancer_skills: 'checking'
+      profiles: "checking",
+      freelancer_profiles: "checking",
+      freelancer_education: "checking",
+      freelancer_skills: "checking",
     },
     storage: {
-      bucket: 'checking',
-      permissions: 'checking'
+      bucket: "checking",
+      permissions: "checking",
     },
-    userProfile: 'checking'
+    userProfile: "checking",
   });
 
   useEffect(() => {
     if (!user) {
-      router.push('/login');
+      router.push("/login");
       return;
     }
 
@@ -38,84 +38,104 @@ export default function Troubleshoot() {
 
     try {
       // Check connection to Supabase
-      const { data: connectionTest, error: connectionError } = await supabase.from('_test').select('*').limit(1).catch(() => ({ data: null, error: new Error('Connection test failed') }));
-      
-      setStatus(prev => ({
+      const { data: connectionTest, error: connectionError } = await supabase
+        .from("_test")
+        .select("*")
+        .limit(1)
+        .catch(() => ({
+          data: null,
+          error: new Error("Connection test failed"),
+        }));
+
+      setStatus((prev) => ({
         ...prev,
-        connection: connectionError ? 'error' : 'success'
+        connection: connectionError ? "error" : "success",
       }));
 
       // Check if tables exist
-      const tableChecks = ['profiles', 'freelancer_profiles', 'freelancer_education', 'freelancer_skills'];
-      
+      const tableChecks = [
+        "profiles",
+        "freelancer_profiles",
+        "freelancer_education",
+        "freelancer_skills",
+      ];
+
       for (const table of tableChecks) {
-        const { error: tableError } = await supabase.from(table).select('count').limit(1).catch(() => ({ error: new Error(`Table ${table} does not exist`) }));
-        
-        setStatus(prev => ({
+        const { error: tableError } = await supabase
+          .from(table)
+          .select("count")
+          .limit(1)
+          .catch(() => ({ error: new Error(`Table ${table} does not exist`) }));
+
+        setStatus((prev) => ({
           ...prev,
           tablesExist: {
             ...prev.tablesExist,
-            [table]: tableError ? 'error' : 'success'
-          }
+            [table]: tableError ? "error" : "success",
+          },
         }));
       }
 
       // Check storage bucket
       try {
-        const { data: buckets, error: bucketsError } = await supabase.storage.listBuckets();
-        
-        const bucketExists = buckets && buckets.some(b => b.name === 'profile-images');
-        
-        setStatus(prev => ({
+        const { data: buckets, error: bucketsError } =
+          await supabase.storage.listBuckets();
+
+        const bucketExists =
+          buckets && buckets.some((b) => b.name === "profile-images");
+
+        setStatus((prev) => ({
           ...prev,
           storage: {
             ...prev.storage,
-            bucket: bucketsError || !bucketExists ? 'error' : 'success'
-          }
+            bucket: bucketsError || !bucketExists ? "error" : "success",
+          },
         }));
 
         // Check storage permissions
         if (bucketExists) {
-          const testFile = new File(['test'], 'test.txt', { type: 'text/plain' });
-          
+          const testFile = new File(["test"], "test.txt", {
+            type: "text/plain",
+          });
+
           const { error: uploadError } = await supabase.storage
-            .from('profile-images')
+            .from("profile-images")
             .upload(`test-${Date.now()}.txt`, testFile);
-          
-          setStatus(prev => ({
+
+          setStatus((prev) => ({
             ...prev,
             storage: {
               ...prev.storage,
-              permissions: uploadError ? 'error' : 'success'
-            }
+              permissions: uploadError ? "error" : "success",
+            },
           }));
         }
       } catch (storageError) {
-        setStatus(prev => ({
+        setStatus((prev) => ({
           ...prev,
           storage: {
-            bucket: 'error',
-            permissions: 'error'
-          }
+            bucket: "error",
+            permissions: "error",
+          },
         }));
       }
 
       // Check if user profile exists
       if (user) {
         const { data: profile, error: profileError } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', user.id)
+          .from("profiles")
+          .select("*")
+          .eq("id", user.id)
           .single();
 
-        setStatus(prev => ({
+        setStatus((prev) => ({
           ...prev,
-          userProfile: profileError || !profile ? 'error' : 'success'
+          userProfile: profileError || !profile ? "error" : "success",
         }));
       }
     } catch (error) {
-      console.error('Troubleshooting error:', error);
-      toast.error('Error running diagnostics');
+      console.error("Troubleshooting error:", error);
+      toast.error("Error running diagnostics");
     } finally {
       setLoading(false);
     }
@@ -123,39 +143,41 @@ export default function Troubleshoot() {
 
   const fixIssues = async () => {
     setLoading(true);
-    
+
     try {
       // Trigger the setup database API
-      const response = await fetch('/api/setup-database', {
-        method: 'POST',
+      const response = await fetch("/api/setup-database", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
       });
-      
+
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to fix issues');
+        throw new Error(errorData.error || "Failed to fix issues");
       }
-      
-      toast.success('Setup completed successfully!');
-      
+
+      toast.success("Setup completed successfully!");
+
       // Re-check status
       setTimeout(() => {
         checkSystemStatus();
       }, 2000);
     } catch (error) {
-      console.error('Fix error:', error);
-      toast.error(error.message || 'Failed to fix issues');
+      console.error("Fix error:", error);
+      toast.error(error.message || "Failed to fix issues");
     } finally {
       setLoading(false);
     }
   };
 
   const renderStatusIcon = (status) => {
-    if (status === 'checking') {
-      return <div className="h-4 w-4 rounded-full bg-gray-200 animate-pulse"></div>;
-    } else if (status === 'success') {
+    if (status === "checking") {
+      return (
+        <div className="h-4 w-4 rounded-full bg-gray-200 animate-pulse"></div>
+      );
+    } else if (status === "success") {
       return <div className="h-4 w-4 rounded-full bg-green-500"></div>;
     } else {
       return <div className="h-4 w-4 rounded-full bg-red-500"></div>;
@@ -176,7 +198,7 @@ export default function Troubleshoot() {
 
         <div className="bg-white shadow rounded-lg p-6 mb-8">
           <h2 className="text-xl font-semibold mb-4">System Status</h2>
-          
+
           <div className="space-y-4">
             <div className="flex items-center justify-between p-2 bg-gray-50 rounded">
               <span>Database Connection</span>
@@ -184,19 +206,24 @@ export default function Troubleshoot() {
                 {renderStatusIcon(status.connection)}
               </div>
             </div>
-            
+
             <div className="border-t border-gray-200 pt-4">
               <h3 className="font-medium mb-2">Database Tables</h3>
-              {Object.entries(status.tablesExist).map(([table, tableStatus]) => (
-                <div key={table} className="flex items-center justify-between p-2 bg-gray-50 rounded mb-2">
-                  <span>{table}</span>
-                  <div className="flex items-center">
-                    {renderStatusIcon(tableStatus)}
+              {Object.entries(status.tablesExist).map(
+                ([table, tableStatus]) => (
+                  <div
+                    key={table}
+                    className="flex items-center justify-between p-2 bg-gray-50 rounded mb-2"
+                  >
+                    <span>{table}</span>
+                    <div className="flex items-center">
+                      {renderStatusIcon(tableStatus)}
+                    </div>
                   </div>
-                </div>
-              ))}
+                )
+              )}
             </div>
-            
+
             <div className="border-t border-gray-200 pt-4">
               <h3 className="font-medium mb-2">Storage</h3>
               <div className="flex items-center justify-between p-2 bg-gray-50 rounded mb-2">
@@ -212,7 +239,7 @@ export default function Troubleshoot() {
                 </div>
               </div>
             </div>
-            
+
             <div className="border-t border-gray-200 pt-4">
               <h3 className="font-medium mb-2">User Profile</h3>
               <div className="flex items-center justify-between p-2 bg-gray-50 rounded mb-2">
@@ -233,9 +260,9 @@ export default function Troubleshoot() {
             disabled={loading}
             className="flex-1 px-4 py-3 bg-blue-600 text-white rounded-lg font-medium shadow-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-70"
           >
-            {loading ? 'Checking...' : 'Refresh Status'}
+            {loading ? "Checking..." : "Refresh Status"}
           </motion.button>
-          
+
           <motion.button
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
@@ -243,13 +270,13 @@ export default function Troubleshoot() {
             disabled={loading}
             className="flex-1 px-4 py-3 bg-green-600 text-white rounded-lg font-medium shadow-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 disabled:opacity-70"
           >
-            {loading ? 'Fixing...' : 'Fix Issues'}
+            {loading ? "Fixing..." : "Fix Issues"}
           </motion.button>
-          
+
           <motion.button
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
-            onClick={() => router.push('/setup-profile')}
+            onClick={() => router.push("/setup-profile")}
             className="flex-1 px-4 py-3 bg-gray-600 text-white rounded-lg font-medium shadow-lg hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
           >
             Try Profile Setup Again
@@ -258,4 +285,4 @@ export default function Troubleshoot() {
       </div>
     </div>
   );
-} 
+}

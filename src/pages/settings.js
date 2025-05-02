@@ -4,8 +4,7 @@ import Layout from "../components/Layout";
 import { useAuth } from "@/contexts/AuthContext";
 import { doc, getDoc, updateDoc } from "firebase/firestore";
 import { updatePassword } from "firebase/auth";
-import { auth } from "@/lib/firebaseClient";
-import { db } from "@/firebase/firebase.config";
+import { db, auth } from "@/firebase/firebase.config";
 import {
   FiUser,
   FiBell,
