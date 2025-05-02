@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/firebase/firebase.config";
+import { db } from "@/firebase/firebase.config";
 import { motion } from "framer-motion";
 import toast from "react-hot-toast";
 

@@ -1,21 +1,21 @@
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/router';
-import Link from 'next/link';
-import { useAuth } from '@/contexts/AuthContext';
-import { supabase } from '@/lib/supabaseClient';
-import { motion } from 'framer-motion';
-import { toast } from 'react-hot-toast';
-import { FaDollarSign, FaClock } from 'react-icons/fa';
+import { useState, useEffect } from "react";
+import { useRouter } from "next/router";
+import Link from "next/link";
+import { useAuth } from "@/contexts/AuthContext";
+import { db } from "@/firebase/firebase.config";
+import { motion } from "framer-motion";
+import { toast } from "react-hot-toast";
+import { FaDollarSign, FaClock } from "react-icons/fa";
 
 export default function EditProject() {
   const [formData, setFormData] = useState({
-    title: '',
-    description: '',
-    budget: '',
-    duration: '',
-    skills: []
+    title: "",
+    description: "",
+    budget: "",
+    duration: "",
+    skills: [],
   });
-  const [skillInput, setSkillInput] = useState('');
+  const [skillInput, setSkillInput] = useState("");
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const router = useRouter();
@@ -32,16 +32,16 @@ export default function EditProject() {
     try {
       setLoading(true);
       const { data, error } = await supabase
-        .from('projects')
-        .select('*')
-        .eq('id', id)
+        .from("projects")
+        .select("*")
+        .eq("id", id)
         .single();
 
       if (error) throw error;
 
       if (data.client_id !== user?.id) {
-        toast.error('You do not have permission to edit this project');
-        router.push('/projects');
+        toast.error("You do not have permission to edit this project");
+        router.push("/projects");
         return;
       }
 
@@ -50,12 +50,12 @@ export default function EditProject() {
         description: data.description,
         budget: data.budget,
         duration: data.duration,
-        skills: data.skills_required || []
+        skills: data.skills_required || [],
       });
     } catch (error) {
-      console.error('Error fetching project:', error);
-      toast.error('Failed to load project');
-      router.push('/projects');
+      console.error("Error fetching project:", error);
+      toast.error("Failed to load project");
+      router.push("/projects");
     } finally {
       setLoading(false);
     }
@@ -63,27 +63,27 @@ export default function EditProject() {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   };
 
   const handleAddSkill = (e) => {
     e.preventDefault();
     if (skillInput.trim() && !formData.skills.includes(skillInput.trim())) {
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
-        skills: [...prev.skills, skillInput.trim()]
+        skills: [...prev.skills, skillInput.trim()],
       }));
-      setSkillInput('');
+      setSkillInput("");
     }
   };
 
   const handleRemoveSkill = (skillToRemove) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      skills: prev.skills.filter(skill => skill !== skillToRemove)
+      skills: prev.skills.filter((skill) => skill !== skillToRemove),
     }));
   };
 
@@ -93,24 +93,24 @@ export default function EditProject() {
     try {
       setSubmitting(true);
       const { error } = await supabase
-        .from('projects')
+        .from("projects")
         .update({
           title: formData.title,
           description: formData.description,
           budget: parseFloat(formData.budget),
           duration: formData.duration,
           skills_required: formData.skills,
-          updated_at: new Date().toISOString()
+          updated_at: new Date().toISOString(),
         })
-        .eq('id', id);
+        .eq("id", id);
 
       if (error) throw error;
 
-      toast.success('Project updated successfully');
+      toast.success("Project updated successfully");
       router.push(`/projects/${id}`);
     } catch (error) {
-      console.error('Error updating project:', error);
-      toast.error('Failed to update project');
+      console.error("Error updating project:", error);
+      toast.error("Failed to update project");
     } finally {
       setSubmitting(false);
     }
@@ -136,7 +136,9 @@ export default function EditProject() {
           >
             <div className="p-6">
               <div className="flex items-center justify-between mb-6">
-                <h1 className="text-2xl font-bold text-gray-900">Edit Project</h1>
+                <h1 className="text-2xl font-bold text-gray-900">
+                  Edit Project
+                </h1>
                 <Link href={`/projects/${id}`} legacyBehavior>
                   <a className="text-sm font-medium text-blue-600 hover:text-blue-500">
                     Back to Project
@@ -146,7 +148,10 @@ export default function EditProject() {
 
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div>
-                  <label htmlFor="title" className="block text-sm font-medium text-gray-700">
+                  <label
+                    htmlFor="title"
+                    className="block text-sm font-medium text-gray-700"
+                  >
                     Project Title
                   </label>
                   <input
@@ -162,7 +167,10 @@ export default function EditProject() {
                 </div>
 
                 <div>
-                  <label htmlFor="description" className="block text-sm font-medium text-gray-700">
+                  <label
+                    htmlFor="description"
+                    className="block text-sm font-medium text-gray-700"
+                  >
                     Description
                   </label>
                   <textarea
@@ -179,7 +187,10 @@ export default function EditProject() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <label htmlFor="budget" className="block text-sm font-medium text-gray-700">
+                    <label
+                      htmlFor="budget"
+                      className="block text-sm font-medium text-gray-700"
+                    >
                       Budget
                     </label>
                     <div className="mt-1 relative rounded-md shadow-sm">
@@ -205,7 +216,10 @@ export default function EditProject() {
                   </div>
 
                   <div>
-                    <label htmlFor="duration" className="block text-sm font-medium text-gray-700">
+                    <label
+                      htmlFor="duration"
+                      className="block text-sm font-medium text-gray-700"
+                    >
                       Duration
                     </label>
                     <div className="mt-1 relative rounded-md shadow-sm">
@@ -221,19 +235,26 @@ export default function EditProject() {
                         className="block w-full pl-10 pr-10 sm:text-sm border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
                       >
                         <option value="">Select duration</option>
-                        <option value="less_than_1_week">Less than 1 week</option>
+                        <option value="less_than_1_week">
+                          Less than 1 week
+                        </option>
                         <option value="1_to_2_weeks">1-2 weeks</option>
                         <option value="2_to_4_weeks">2-4 weeks</option>
                         <option value="1_to_3_months">1-3 months</option>
                         <option value="3_to_6_months">3-6 months</option>
-                        <option value="more_than_6_months">More than 6 months</option>
+                        <option value="more_than_6_months">
+                          More than 6 months
+                        </option>
                       </select>
                     </div>
                   </div>
                 </div>
 
                 <div>
-                  <label htmlFor="skills" className="block text-sm font-medium text-gray-700">
+                  <label
+                    htmlFor="skills"
+                    className="block text-sm font-medium text-gray-700"
+                  >
                     Required Skills
                   </label>
                   <div className="mt-1">
@@ -274,7 +295,7 @@ export default function EditProject() {
                 </div>
 
                 <div className="flex justify-end space-x-3">
-                  <Link 
+                  <Link
                     href={`/projects/${id}`}
                     className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                   >
@@ -284,7 +305,7 @@ export default function EditProject() {
                     type="submit"
                     disabled={submitting}
                     className={`inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${
-                      submitting ? 'opacity-50 cursor-not-allowed' : ''
+                      submitting ? "opacity-50 cursor-not-allowed" : ""
                     }`}
                   >
                     {submitting ? (
@@ -293,7 +314,7 @@ export default function EditProject() {
                         Updating...
                       </div>
                     ) : (
-                      'Update Project'
+                      "Update Project"
                     )}
                   </button>
                 </div>
@@ -304,4 +325,4 @@ export default function EditProject() {
       </div>
     </div>
   );
-} 
+}
