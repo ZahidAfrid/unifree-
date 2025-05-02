@@ -21,6 +21,8 @@ import {
   FiGlobe,
   FiUser,
 } from "react-icons/fi";
+import { FaStarHalfAlt, FaRegStar } from "react-icons/fa";
+
 import {
   FaRocket,
   FaLightbulb,
@@ -37,8 +39,12 @@ import {
   FaStar,
   FaCheckCircle,
 } from "react-icons/fa";
+import { Swiper, SwiperSlide } from "swiper/react";
+import "swiper/css";
 import Lenis from "@studio-freight/lenis";
 import Head from "next/head";
+import { collection, getDocs, query, where, orderBy } from "firebase/firestore";
+import { db } from "@/firebase/firebase.config";
 
 const heroWords = [
   "Freelancers",
@@ -73,6 +79,42 @@ export default function Home() {
     requestAnimationFrame(raf);
 
     return () => lenis.destroy();
+  }, []);
+
+  useEffect(() => {
+    const fetchHomeData = async () => {
+      try {
+        const freelancerSnap = await getDocs(
+          collection(db, "freelancer_profiles")
+        );
+        const freelancerList = freelancerSnap.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+          profileImage: doc.data().profileImage || "/images/default-avatar.png",
+          rating: 4.5,
+        }));
+        setTopFreelancers(freelancerList);
+
+        const projectsSnap = await getDocs(
+          query(
+            collection(db, "projects"),
+            where("visibility", "==", "public"),
+            orderBy("createdAt", "desc")
+          )
+        );
+        const projectList = projectsSnap.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+          budget: `$${doc.data().budget || 0}`,
+        }));
+        setFeaturedProjects(projectList);
+        setLoading(false);
+      } catch (err) {
+        console.error("Error loading homepage data:", err);
+      }
+    };
+
+    fetchHomeData();
   }, []);
 
   useEffect(() => {
@@ -170,6 +212,23 @@ export default function Home() {
     } else {
       return <FiZap className="mr-2" />;
     }
+  };
+  const renderStars = (rating) => {
+    const stars = [];
+    const fullStars = Math.floor(rating);
+    const hasHalfStar = rating % 1 >= 0.5;
+
+    for (let i = 0; i < 5; i++) {
+      if (i < fullStars) {
+        stars.push(<FaStar key={i} className="text-yellow-400" />);
+      } else if (i === fullStars && hasHalfStar) {
+        stars.push(<FaStarHalfAlt key={i} className="text-yellow-400" />);
+      } else {
+        stars.push(<FaRegStar key={i} className="text-yellow-400" />);
+      }
+    }
+
+    return stars;
   };
 
   return (
@@ -374,49 +433,35 @@ export default function Home() {
                       <div className="h-4 bg-gray-200 rounded w-2/3"></div>
                     </div>
                   ))
-                : featuredProjects.map((project, index) => (
-                    <motion.div
-                      key={project.id}
-                      initial={{ opacity: 0, y: 20 }}
-                      whileInView={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.5, delay: index * 0.1 }}
-                      viewport={{ once: true }}
-                      className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-shadow group"
-                    >
-                      <div className="p-6">
-                        <div className="flex items-center mb-4">
-                          <div className="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 mr-3">
-                            <FiBriefcase />
+                : featuredProjects.slice(0, 6).map((project, index) => (
+                    <Link href={`/projects/${project.id}`} key={project.id}>
+                      <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.5, delay: index * 0.1 }}
+                        viewport={{ once: true }}
+                        className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-shadow group cursor-pointer"
+                      >
+                        <div className="p-6">
+                          <div className="flex items-center mb-4">
+                            <div className="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 mr-3">
+                              <FiBriefcase />
+                            </div>
+                            <h3 className="text-xl font-semibold text-gray-900 group-hover:text-indigo-600 transition-colors">
+                              {project.title}
+                            </h3>
                           </div>
-                          <h3 className="text-xl font-semibold text-gray-900 group-hover:text-indigo-600 transition-colors">
-                            {project.title}
-                          </h3>
-                        </div>
-                        <p className="text-gray-600 line-clamp-3 mb-4">
-                          {project.description}
-                        </p>
-                        <div className="flex items-center justify-between pt-4 border-t border-gray-100">
-                          <div className="flex items-center">
-                            <Image
-                              src={
-                                project.profiles?.avatar_url ||
-                                "/images/default-avatar.png"
-                              }
-                              alt={project.profiles?.full_name || "Profile"}
-                              width={40}
-                              height={40}
-                              className="h-8 w-8 rounded-full border-2 border-white shadow-sm object-cover"
-                            />
-                            <span className="ml-2 text-sm text-gray-600">
-                              {project.profiles?.full_name}
+                          <p className="text-gray-600 line-clamp-3 mb-4">
+                            {project.description}
+                          </p>
+                          <div className="flex items-center justify-between pt-4 border-t border-gray-100">
+                            <span className="text-indigo-600 font-semibold">
+                              {project.budget}
                             </span>
                           </div>
-                          <span className="text-indigo-600 font-semibold">
-                            ${project.budget}
-                          </span>
                         </div>
-                      </div>
-                    </motion.div>
+                      </motion.div>
+                    </Link>
                   ))}
             </div>
 
@@ -428,7 +473,7 @@ export default function Home() {
               viewport={{ once: true }}
             >
               <Link
-                href="/projects"
+                href="/explore?tab=projects"
                 className="inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-full text-white bg-indigo-600 hover:bg-indigo-700 transition-colors shadow-md"
               >
                 View All Projects
@@ -542,7 +587,7 @@ export default function Home() {
                 </p>
               </div>
               <Link
-                href="/freelancers"
+                href="/explore?tab=freelancers"
                 className="text-indigo-600 hover:text-indigo-700 font-medium flex items-center"
               >
                 View All Freelancers
@@ -550,65 +595,65 @@ export default function Home() {
               </Link>
             </motion.div>
 
-            <div className="mt-8 grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
-              {loading
-                ? // Loading skeletons
-                  [...Array(4)].map((_, i) => (
-                    <div
-                      key={i}
-                      className="bg-white rounded-xl shadow-md p-6 animate-pulse"
-                    >
-                      <div className="h-20 w-20 bg-gray-200 rounded-full mx-auto mb-4"></div>
-                      <div className="h-4 bg-gray-200 rounded w-3/4 mx-auto mb-2"></div>
-                      <div className="h-4 bg-gray-200 rounded w-1/2 mx-auto"></div>
-                    </div>
-                  ))
-                : topFreelancers.map((freelancer, index) => (
-                    <motion.div
-                      key={freelancer.id}
-                      initial={{ opacity: 0, y: 20 }}
-                      whileInView={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.5, delay: index * 0.1 }}
-                      viewport={{ once: true }}
-                      className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-shadow text-center group"
-                    >
-                      <div className="p-6">
-                        <div className="relative inline-block">
-                          <div className="absolute -inset-1 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full blur opacity-30 group-hover:opacity-100 transition duration-1000 group-hover:duration-200"></div>
-                          <Image
-                            src={
-                              freelancer.profiles?.avatar_url ||
-                              "/images/default-avatar.png"
-                            }
-                            alt={freelancer.profiles?.full_name || "Profile"}
-                            width={96}
-                            height={96}
-                            className="h-24 w-24 rounded-full mx-auto relative z-10 border-4 border-white shadow-md object-cover"
-                          />
-                        </div>
-                        <h3 className="mt-4 text-lg font-semibold text-gray-900 group-hover:text-indigo-600 transition-colors">
-                          {freelancer.profiles?.full_name}
-                        </h3>
-                        <p className="mt-1 text-sm text-gray-600">
-                          {freelancer.specialization}
-                        </p>
-                        <div className="mt-4 flex items-center justify-center">
-                          <FiStar className="text-yellow-400" />
-                          <span className="ml-1 text-sm font-medium text-gray-700">
-                            {freelancer.rating.toFixed(1)}
-                          </span>
-                        </div>
-                        <Link
-                          href={`/freelancer/${freelancer.profiles?.username}`}
-                          className="mt-4 inline-flex items-center text-sm text-indigo-600 hover:text-indigo-800"
-                        >
-                          View Profile
-                          <FiArrowRight className="ml-1" />
-                        </Link>
+            {loading ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+                {[...Array(4)].map((_, i) => (
+                  <div
+                    key={i}
+                    className="bg-white rounded-xl shadow-md p-6 animate-pulse"
+                  >
+                    <div className="h-20 w-20 bg-gray-200 rounded-full mx-auto mb-4"></div>
+                    <div className="h-4 bg-gray-200 rounded w-3/4 mx-auto mb-2"></div>
+                    <div className="h-4 bg-gray-200 rounded w-1/2 mx-auto"></div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <Swiper
+                spaceBetween={16}
+                slidesPerView={1.2}
+                breakpoints={{
+                  640: { slidesPerView: 2.2 },
+                  1024: { slidesPerView: 3.2 },
+                  1280: { slidesPerView: 4 },
+                }}
+              >
+                {topFreelancers.slice(0, 6).map((freelancer) => (
+                  <SwiperSlide key={freelancer.id}>
+                    <div className="bg-white rounded-xl shadow-md p-6 text-center group hover:shadow-xl transition-shadow">
+                      <Image
+                        src={
+                          freelancer.profileImage ||
+                          "/images/default-avatar.png"
+                        }
+                        alt={freelancer.name}
+                        width={96}
+                        height={96}
+                        className="h-24 w-24 rounded-full mx-auto border-4 border-white shadow-md object-cover"
+                      />
+                      <h3 className="mt-4 text-lg font-semibold text-gray-900 group-hover:text-indigo-600">
+                        {freelancer.name}
+                      </h3>
+                      <p className="text-sm text-gray-600">
+                        {freelancer.title}
+                      </p>
+                      <p className="text-sm text-gray-500">
+                        {freelancer.university}
+                      </p>
+                      <div className="mt-2 flex justify-center">
+                        {renderStars(freelancer.rating)}
                       </div>
-                    </motion.div>
-                  ))}
-            </div>
+                      <Link
+                        href={`/freelancers/${freelancer.id}`}
+                        className="mt-4 inline-flex items-center text-sm text-indigo-600 hover:text-indigo-800"
+                      >
+                        View Profile <FiArrowRight className="ml-1" />
+                      </Link>
+                    </div>
+                  </SwiperSlide>
+                ))}
+              </Swiper>
+            )}
           </div>
         </section>
 

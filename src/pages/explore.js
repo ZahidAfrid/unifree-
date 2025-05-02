@@ -26,6 +26,7 @@ import {
   getDoc,
   doc,
 } from "firebase/firestore";
+import { useRouter } from "next/router";
 
 // Available skills for filtering
 const allSkills = [
@@ -72,6 +73,7 @@ const universities = [
 ];
 
 export default function Explore() {
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState("freelancers");
   const [loading, setLoading] = useState(true);
   const [dataFetched, setDataFetched] = useState(false);
@@ -111,7 +113,15 @@ export default function Explore() {
     return validUsers;
   }
 
+  useEffect(() => {
+    const tab = router.query.tab;
+    if (tab === "projects" || tab === "freelancers") {
+      setActiveTab(tab);
+    }
+  }, [router.query.tab]);
+
   // Fetch real data from Firebase
+
   useEffect(() => {
     setLoading(true);
     let isMounted = true;

@@ -329,7 +329,7 @@ export default function ProjectDetails() {
         </title>
       </Head>
       <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-purple-50 py-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-40">
           <div className="max-w-3xl mx-auto">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -337,7 +337,7 @@ export default function ProjectDetails() {
               transition={{ duration: 0.5 }}
               className="bg-white shadow rounded-lg overflow-hidden"
             >
-              <div className="p-6">
+              <div className="p-6 ">
                 <div className="flex flex-col md:flex-row justify-between">
                   <div>
                     <h1 className="text-2xl font-bold text-gray-900">

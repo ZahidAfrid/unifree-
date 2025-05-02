@@ -415,9 +415,9 @@ export default function Dashboard() {
         <title>Dashboard | Student Freelance Platform</title>
       </Head>
 
-      <div className="min-h-screen bg-gray-50">
+      <div className=" min-h-screen bg-gray-50 pb-12">
         {/* Header */}
-        <div className="bg-gradient-to-r from-indigo-600 to-purple-600 pt-20 pb-12">
+        <div className="bg-gradient-to-r from-indigo-600 via-purple-500 to-pink-500 text-white relative overflow-hidden pt-32 pb-12">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex flex-col md:flex-row items-center justify-between">
               <div className="flex items-center space-x-4">

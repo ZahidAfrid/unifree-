@@ -189,7 +189,7 @@ export default function FreelancerDetail() {
 
       <div className="bg-gray-50 min-h-screen pb-12">
         {/* Profile Header */}
-        <div className="bg-gradient-to-r from-indigo-600 via-purple-500 to-pink-500 text-white relative overflow-hidden">
+        <div className="bg-gradient-to-r from-indigo-600 via-purple-500 to-pink-500 text-white relative overflow-hidden pt-32">
           {/* Adding background pattern for better aesthetics */}
           <div className="absolute inset-0 opacity-10 bg-[url('/images/pattern.svg')]"></div>
           <div className="absolute top-0 right-0 -mt-20 -mr-20 w-80 h-80 bg-purple-300 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob"></div>
@@ -273,7 +273,7 @@ export default function FreelancerDetail() {
         </div>
 
         {/* Quick Stats */}
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 -mt-10">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 mt-30">
           <motion.div
             className="bg-white rounded-xl shadow-lg p-6 grid grid-cols-2 md:grid-cols-4 gap-6"
             initial={{ opacity: 0, y: 20 }}
