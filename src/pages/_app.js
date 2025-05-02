@@ -75,8 +75,10 @@ function AppContent({ Component, pageProps }) {
   useEffect(() => {
     // Redirect logic for authenticated users
     const handleRouting = async () => {
-      // ✅ Don't redirect on public pages like home, login, signup
       if (authLoading || !user) return;
+
+      const publicPaths = ["/", "/explore", "/contact", "/about"];
+      if (publicPaths.includes(router.pathname)) return; // ✅ EXIT EARLY
 
       const protectedPaths = [
         "/client-dashboard",
@@ -91,7 +93,6 @@ function AppContent({ Component, pageProps }) {
         router.pathname.startsWith(path)
       );
 
-      // ✅ Only redirect on protected pages
       if (isProtectedRoute) {
         if (user.userType === "client") {
           const isClientComplete = await hasCompletedClientRegistration();
@@ -108,8 +109,6 @@ function AppContent({ Component, pageProps }) {
           router.push("/select-user-type");
         }
       }
-
-      // 🟢 If on home page or public pages → no redirect happens
     };
 
     handleRouting();
