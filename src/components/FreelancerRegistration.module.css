@@ -1,0 +1,324 @@
+.container {
+  padding: 2rem;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.card {
+  background-color: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  padding: 2rem;
+}
+
+.stepIndicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 2rem;
+}
+
+.step {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: #e2e8f0;
+  color: #718096;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 1.125rem;
+  transition: all 0.3s ease;
+}
+
+.activeStep {
+  background-color: #4299e1;
+  color: white;
+}
+
+.stepConnector {
+  height: 2px;
+  flex: 1;
+  max-width: 60px;
+  background-color: #e2e8f0;
+  margin: 0 10px;
+}
+
+.formTitle {
+  text-align: center;
+  font-size: 1.75rem;
+  color: #2d3748;
+  margin-bottom: 2rem;
+}
+
+.formGroup {
+  margin-bottom: 1.5rem;
+}
+
+.formGroup label {
+  display: block;
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+  color: #4a5568;
+}
+
+.formGroup input,
+.formGroup select,
+.formGroup textarea {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.5rem;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+}
+
+.formGroup input:focus,
+.formGroup select:focus,
+.formGroup textarea:focus {
+  outline: none;
+  border-color: #4299e1;
+  box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.15);
+}
+
+.error {
+  color: #e53e3e;
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+  display: block;
+}
+
+.buttonContainer {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 2rem;
+}
+
+.primaryButton {
+  background: linear-gradient(to right, #4299e1, #667eea);
+  color: white;
+  border: none;
+  border-radius: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.primaryButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(66, 153, 225, 0.3);
+}
+
+.primaryButton:disabled {
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+.secondaryButton {
+  background-color: #edf2f7;
+  color: #4a5568;
+  border: none;
+  border-radius: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.secondaryButton:hover {
+  background-color: #e2e8f0;
+}
+
+.secondaryButton:disabled {
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+.formRowGroup {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.checkboxGroup {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.checkboxGroup input {
+  width: auto;
+  margin-right: 0.5rem;
+}
+
+.imageUploadContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.imagePreview {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 3px solid #4299e1;
+  margin: 0 auto;
+}
+
+.imagePreview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.imageUploadButtons {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.webcamContainer {
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+}
+
+.webcam {
+  width: 100%;
+  max-width: 400px;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.captureButton {
+  margin-top: 0.5rem;
+  background-color: #38a169;
+  color: white;
+}
+
+.captureButton:hover {
+  background-color: #2f855a;
+}
+
+.skillInputContainer {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.skillInputContainer select,
+.skillInputContainer input {
+  flex: 1;
+}
+
+.addButton {
+  background-color: #4299e1;
+  color: white;
+  border: none;
+  border-radius: 0.5rem;
+  padding: 0 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.addButton:hover {
+  background-color: #3182ce;
+}
+
+.addButton:disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.skillsContainer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.skillTag {
+  background-color: #ebf4ff;
+  color: #3182ce;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.removeSkill {
+  background: none;
+  border: none;
+  color: #718096;
+  font-size: 1.25rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0;
+  margin-left: 0.25rem;
+}
+
+.removeSkill:hover {
+  color: #e53e3e;
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+  .container {
+    padding: 1rem;
+  }
+  
+  .card {
+    padding: 1.5rem;
+  }
+  
+  .formRowGroup {
+    grid-template-columns: 1fr;
+  }
+  
+  .buttonContainer {
+    flex-direction: column-reverse;
+    gap: 1rem;
+  }
+  
+  .buttonContainer button {
+    width: 100%;
+  }
+  
+  .imageUploadButtons {
+    flex-direction: column;
+    width: 100%;
+  }
+  
+  .skillInputContainer {
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 480px) {
+  .step {
+    width: 30px;
+    height: 30px;
+    font-size: 0.875rem;
+  }
+  
+  .stepConnector {
+    max-width: 30px;
+  }
+  
+  .formTitle {
+    font-size: 1.5rem;
+  }
+} 

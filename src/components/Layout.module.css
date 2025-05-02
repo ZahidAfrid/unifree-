@@ -1,0 +1,18 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.main {
+  flex: 1;
+  padding-top: 4rem; /* Space for fixed navbar */
+  padding-bottom: 2rem;
+}
+
+.mainContent {
+  /* Custom styling for the content area */
+  margin-top: 1rem;
+  padding: 1rem;
+}
+  

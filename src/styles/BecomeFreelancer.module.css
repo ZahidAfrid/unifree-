@@ -1,0 +1,143 @@
+.container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+.header h1 {
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: #2d3748;
+  margin-bottom: 1rem;
+  background: linear-gradient(135deg, #4299e1, #667eea);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.header p {
+  font-size: 1.125rem;
+  color: #718096;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.content {
+  display: flex;
+  gap: 3rem;
+}
+
+.infoSection {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.infoCard {
+  background-color: white;
+  border-radius: 1rem;
+  padding: 2rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.infoCard:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+.iconWrapper {
+  width: 60px;
+  height: 60px;
+  background: linear-gradient(135deg, #4299e1, #667eea);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+}
+
+.iconWrapper i {
+  font-size: 1.75rem;
+  color: white;
+}
+
+.infoCard h2 {
+  font-size: 1.5rem;
+  color: #2d3748;
+  margin-top: 0;
+  margin-bottom: 1rem;
+}
+
+.infoCard p {
+  color: #718096;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.registrationSection {
+  flex: 1.5;
+}
+
+/* Responsive styles */
+@media (max-width: 1024px) {
+  .content {
+    flex-direction: column;
+  }
+  
+  .infoSection {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+  
+  .infoCard {
+    flex: 1;
+    min-width: 300px;
+  }
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 1.5rem;
+  }
+  
+  .header h1 {
+    font-size: 2rem;
+  }
+  
+  .infoSection {
+    flex-direction: column;
+  }
+  
+  .infoCard {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .header h1 {
+    font-size: 1.75rem;
+  }
+  
+  .header p {
+    font-size: 1rem;
+  }
+  
+  .iconWrapper {
+    width: 50px;
+    height: 50px;
+  }
+  
+  .iconWrapper i {
+    font-size: 1.5rem;
+  }
+  
+  .infoCard h2 {
+    font-size: 1.25rem;
+  }
+} 

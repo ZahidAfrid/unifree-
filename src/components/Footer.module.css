@@ -1,0 +1,88 @@
+.footer {
+  box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.1);
+  position: relative;
+  z-index: 10;
+}
+
+.footer a {
+  text-decoration: none;
+  transition: color 0.3s ease, transform 0.2s ease;
+}
+
+.footer a:hover {
+  transform: translateY(-2px);
+}
+
+.socialLinks a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  transition: all 0.3s ease;
+}
+
+.socialLinks a:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: translateY(-3px);
+}
+
+.quickLinks li {
+  position: relative;
+  padding-left: 12px;
+  transition: all 0.3s ease;
+}
+
+.quickLinks li::before {
+  content: "→";
+  position: absolute;
+  left: 0;
+  opacity: 0;
+  transition: all 0.3s ease;
+}
+
+.quickLinks li:hover {
+  padding-left: 18px;
+}
+
+.quickLinks li:hover::before {
+  opacity: 1;
+}
+
+.contactInfo p {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.contactInfo i {
+  margin-right: 10px;
+  font-size: 18px;
+  opacity: 0.8;
+}
+
+.bottomBar {
+  animation: fadeIn 1s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .footer {
+    text-align: center;
+  }
+  
+  .socialLinks {
+    justify-content: center;
+  }
+}
