@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/router";
 import { motion, AnimatePresence } from "framer-motion";
 import { db } from "@/firebase/firebase.config";
@@ -99,7 +99,7 @@ export default function Messages() {
     }
   }, [searchTerm, conversations, user]);
 
-  const fetchUnreadCounts = async () => {
+  const fetchUnreadCounts = useCallback(async () => {
     try {
       const q = query(
         collection(db, "messages"),
@@ -119,9 +119,9 @@ export default function Messages() {
     } catch (error) {
       console.error("Error fetching unread counts:", error);
     }
-  };
+  }, [user]);
 
-  const fetchConversations = async () => {
+  const fetchConversations = useCallback(async () => {
     try {
       const q = query(
         collection(db, "conversations"),
@@ -162,9 +162,9 @@ export default function Messages() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user]);
 
-  const fetchMessages = async () => {
+  const fetchMessages = useCallback(async () => {
     try {
       const q = query(
         collection(db, "messages"),
@@ -177,9 +177,9 @@ export default function Messages() {
     } catch (error) {
       console.error("Error fetching messages:", error);
     }
-  };
+  }, [selectedConversation]);
 
-  const markMessagesAsRead = async () => {
+  const markMessagesAsRead = useCallback(async () => {
     try {
       const q = query(
         collection(db, "messages"),
@@ -200,7 +200,7 @@ export default function Messages() {
     } catch (error) {
       console.error("Error marking messages as read:", error);
     }
-  };
+  }, [selectedConversation, user]);
 
   const handleSendMessage = async (e) => {
     e.preventDefault();

@@ -1,6 +1,16 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import { motion } from "framer-motion";
+import {
+  collection,
+  query,
+  where,
+  orderBy,
+  getDocs,
+  updateDoc,
+  deleteDoc,
+  doc,
+} from "firebase/firestore";
 import { db } from "@/firebase/firebase.config";
 import { useAuth } from "@/contexts/AuthContext";
 import {
@@ -33,31 +43,7 @@ export default function NotificationsPage() {
     }
 
     // Set up real-time subscription
-    const subscription = supabase
-      .channel("notifications")
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "notifications",
-          filter: `user_id=eq.${user.id}`,
-        },
-        (payload) => {
-          if (payload.eventType === "INSERT") {
-            setNotifications((prev) => [payload.new, ...prev]);
-          } else if (payload.eventType === "UPDATE") {
-            setNotifications((prev) =>
-              prev.map((n) => (n.id === payload.new.id ? payload.new : n))
-            );
-          } else if (payload.eventType === "DELETE") {
-            setNotifications((prev) =>
-              prev.filter((n) => n.id !== payload.old.id)
-            );
-          }
-        }
-      )
-      .subscribe();
+    const subscription = {};
 
     return () => {
       subscription.unsubscribe();
@@ -65,35 +51,32 @@ export default function NotificationsPage() {
   }, [user?.id]); // Only depend on user.id
 
   const fetchNotifications = async () => {
-    if (!user) return;
+    if (!user?.uid) return;
 
     try {
       setLoading(true);
-      let query = supabase
-        .from("notifications")
-        .select(
-          `
-          *,
-          project:project_id (id, title),
-          sender:sender_id (id, username, full_name, avatar_url)
-        `
-        )
-        .eq("user_id", user.id)
-        .order("created_at", { ascending: false });
+
+      let q = query(
+        collection(db, "notifications"),
+        where("userId", "==", user.uid),
+        orderBy("createdAt", "desc")
+      );
+
+      const snapshot = await getDocs(q);
+      let data = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
 
       if (filter === "unread") {
-        query = query.eq("read", false);
+        data = data.filter((n) => !n.read);
       } else if (filter === "read") {
-        query = query.eq("read", true);
+        data = data.filter((n) => n.read);
       }
 
-      const { data, error } = await query;
-
-      if (error) throw error;
-      setNotifications(data || []);
-    } catch (error) {
-      console.error("Error fetching notifications:", error);
-      toast.error("Failed to load notifications");
+      setNotifications(data);
+    } catch (err) {
+      console.error("Error fetching notifications:", err);
     } finally {
       setLoading(false);
     }
@@ -101,71 +84,65 @@ export default function NotificationsPage() {
 
   const markAsRead = async (notificationId) => {
     try {
-      const { error } = await supabase
-        .from("notifications")
-        .update({ read: true })
-        .eq("id", notificationId);
-
-      if (error) throw error;
-
+      await updateDoc(doc(db, "notifications", notificationId), {
+        read: true,
+      });
       setNotifications((prev) =>
         prev.map((n) => (n.id === notificationId ? { ...n, read: true } : n))
       );
-      toast.success("Notification marked as read");
-    } catch (error) {
-      console.error("Error marking notification as read:", error);
-      toast.error("Failed to mark notification as read");
+      toast.success("Marked as read");
+    } catch (err) {
+      console.error("Failed to mark as read", err);
+      toast.error("Failed to mark as read");
     }
   };
 
   const markAllAsRead = async () => {
     try {
-      const { error } = await supabase
-        .from("notifications")
-        .update({ read: true })
-        .eq("user_id", user?.id)
-        .eq("read", false);
+      const q = query(
+        collection(db, "notifications"),
+        where("userId", "==", user.uid),
+        where("read", "==", false)
+      );
+      const snapshot = await getDocs(q);
 
-      if (error) throw error;
+      await Promise.all(
+        snapshot.docs.map((docSnap) => updateDoc(docSnap.ref, { read: true }))
+      );
 
       setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
-      toast.success("All notifications marked as read");
-    } catch (error) {
-      console.error("Error marking notifications as read:", error);
-      toast.error("Failed to mark notifications as read");
+      toast.success("All marked as read");
+    } catch (err) {
+      console.error("Failed to mark all as read", err);
+      toast.error("Error marking all as read");
     }
   };
 
   const deleteNotification = async (notificationId) => {
     try {
-      const { error } = await supabase
-        .from("notifications")
-        .delete()
-        .eq("id", notificationId);
-
-      if (error) throw error;
-
+      await deleteDoc(doc(db, "notifications", notificationId));
       setNotifications((prev) => prev.filter((n) => n.id !== notificationId));
       toast.success("Notification deleted");
-    } catch (error) {
-      console.error("Error deleting notification:", error);
+    } catch (err) {
+      console.error("Error deleting", err);
       toast.error("Failed to delete notification");
     }
   };
 
   const clearAllNotifications = async () => {
     try {
-      const { error } = await supabase
-        .from("notifications")
-        .delete()
-        .eq("user_id", user?.id);
+      const q = query(
+        collection(db, "notifications"),
+        where("userId", "==", user.uid)
+      );
+      const snapshot = await getDocs(q);
 
-      if (error) throw error;
+      await Promise.all(snapshot.docs.map((docSnap) => deleteDoc(docSnap.ref)));
 
       setNotifications([]);
       toast.success("All notifications cleared");
-    } catch (error) {
-      console.error("Error clearing notifications:", error);
+    } catch (err) {
+      console.error("Error clearing all", err);
       toast.error("Failed to clear notifications");
     }
   };
@@ -310,7 +287,10 @@ export default function NotificationsPage() {
                         </div>
                         <div className="mt-1 flex items-center text-xs text-gray-500">
                           <span>
-                            {new Date(notification.created_at).toLocaleString()}
+                            {new Date(
+                              notification.createAt?.toDate?.() ||
+                                notification.createdAt
+                            ).toLocaleDateString()}
                           </span>
                           {notification.project && (
                             <>

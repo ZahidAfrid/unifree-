@@ -1,0 +1,80 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ✅ Users - allow only the logged-in user to access their profile
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // ✅ Freelancer Profiles - public read, self write
+    match /freelancer_profiles/{userId} {
+      allow read: if true; // Public access for Explore
+      allow write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // ✅ Subcollections under freelancer_profiles (e.g., reviews, certificates)
+    match /freelancer_profiles/{userId}/{subCollection}/{docId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // ✅ Client Registration - private access
+    match /client_registration/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // ✅ Projects - accessible only to logged-in users
+    match /projects/{projectId} {
+      allow read, write: if request.auth != null;
+    }
+
+    // ✅ Proposals - freelancer creates/updates; client (project owner) accepts
+    match /proposals/{proposalId} {
+      allow read: if request.auth != null;
+
+      // Freelancer can create their own proposal
+      allow create: if request.auth != null &&
+        request.resource.data.freelancerId == request.auth.uid;
+
+      // Freelancer can update their own proposal
+      allow update: if request.auth != null &&
+        resource.data.freelancerId == request.auth.uid;
+
+      // ✅ Client can accept proposal if they own the related project
+      allow update: if request.auth != null &&
+        resource.data.projectId != null &&
+        get(/databases/$(database)/documents/projects/$(resource.data.projectId)).data.clientId == request.auth.uid;
+    }
+
+    // ✅ Freelancer Skills - public read, auth write
+    match /freelancer_skills/{docId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+
+    // ✅ Notifications - user-specific access
+    match /notifications/{notificationId} {
+      allow read: if request.auth != null &&
+        request.auth.uid == resource.data.userId;
+
+      allow write: if request.auth != null &&
+        request.auth.uid == request.resource.data.userId;
+    }
+
+    // ✅ Accepted Proposals - improved rules for better access
+    match /accepted_proposals/{docId} {
+      // Allow client to create an accepted proposal
+      allow create: if request.auth != null &&
+        request.resource.data.clientId == request.auth.uid;
+
+      // Allow freelancer to read their proposals
+      allow read: if request.auth != null &&
+        (request.query.limit <= 50) &&
+        (request.query.freelancerId == request.auth.uid);
+
+      // Allow freelancer to read specific proposal
+      allow get: if request.auth != null &&
+        resource.data.freelancerId == request.auth.uid;
+    }
+  }
+} 

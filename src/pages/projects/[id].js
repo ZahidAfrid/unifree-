@@ -41,6 +41,7 @@ import {
   addDoc,
   serverTimestamp,
 } from "firebase/firestore";
+import { sendProposalNotificationToClient } from "@/utils/notifications";
 
 export default function ProjectDetails() {
   const router = useRouter();
@@ -73,10 +74,11 @@ export default function ProjectDetails() {
       setProject(projectData);
 
       if (projectData.clientId) {
-        const clientRef = doc(db, "users", projectData.clientId);
+        const clientRef = doc(db, "client_registration", projectData.clientId);
         const clientSnap = await getDoc(clientRef);
         setClient(clientSnap.exists() ? clientSnap.data() : null);
       }
+      console.log("Fetched project data:", projectData);
 
       if (user?.uid === projectData.clientId) {
         const proposalsQuery = query(
@@ -152,7 +154,7 @@ export default function ProjectDetails() {
       // Delete associated proposals
       const proposalsQuery = query(
         collection(db, "proposals"),
-        where("projectId", "==", id)
+        where("projectId", "==", projectId)
       );
 
       const proposalsSnapshot = await getDocs(proposalsQuery);
@@ -177,28 +179,44 @@ export default function ProjectDetails() {
     e.preventDefault();
 
     if (!user) {
-      console.warn("You must be logged in to submit a proposal");
+      toast.error("You must be logged in to submit a proposal");
       router.push("/login");
       return;
     }
 
     if (!proposal.trim()) {
-      console.warn("Please enter a proposal");
+      toast.error("Please write a proposal");
       return;
     }
 
     try {
       setSubmittingProposal(true);
 
-      // Add proposal to Firestore
-      await addDoc(collection(db, "proposals"), {
-        projectId: id,
+      // Get freelancer name first
+      const userSnap = await getDoc(doc(db, "users", user.uid));
+      const freelancerName = userSnap.exists()
+        ? userSnap.data().fullName || user.displayName || "A freelancer"
+        : user.displayName || "A freelancer";
+
+      // Save the proposal with freelancer name
+      const proposalRef = await addDoc(collection(db, "proposals"), {
+        projectId: project.id,
         freelancerId: user.uid,
+        freelancerName: freelancerName,
         content: proposal.trim(),
         bid: parseFloat(bid) || 0,
         status: "pending",
         createdAt: serverTimestamp(),
       });
+
+      // Send notification
+      await sendProposalNotificationToClient(
+        project.clientId,
+        freelancerName,
+        project.id,
+        project.title,
+        user.uid
+      );
 
       toast.success("Proposal submitted successfully");
       setProposal("");
@@ -206,7 +224,7 @@ export default function ProjectDetails() {
       setHasApplied(true);
     } catch (error) {
       console.error("Error submitting proposal:", error);
-      console.warn("Failed to submit proposal");
+      toast.error("Failed to submit proposal");
     } finally {
       setSubmittingProposal(false);
     }
@@ -214,31 +232,36 @@ export default function ProjectDetails() {
 
   const handleProposalAction = async (proposalId, action) => {
     try {
-      // Update proposal status
       const proposalRef = doc(db, "proposals", proposalId);
       await updateDoc(proposalRef, {
         status: action,
       });
 
       if (action === "accepted") {
-        // Update project status and assign freelancer
         const selectedProposal = proposals.find((p) => p.id === proposalId);
 
         if (selectedProposal) {
-          const projectRef = doc(db, "projects", id);
+          const projectRef = doc(db, "projects", projectId); // ✅ Fix: it was 'id' before, should be 'projectId'
           await updateDoc(projectRef, {
             status: "in-progress",
             freelancerId: selectedProposal.freelancerId,
             updatedAt: serverTimestamp(),
           });
+
+          // ✅ Send hire notification to the freelancer
+          await sendHireNotificationToFreelancer(
+            selectedProposal.freelancerId,
+            project.title,
+            project.id
+          );
         }
       }
 
       toast.success(`Proposal ${action}`);
-      fetchProject(); // Refresh data
+      fetchProject();
     } catch (error) {
       console.error("Error updating proposal:", error);
-      console.warn("Failed to update proposal");
+      toast.error("Failed to update proposal");
     }
   };
 

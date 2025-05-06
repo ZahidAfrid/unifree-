@@ -5,8 +5,8 @@ import Layout from "@/components/Layout";
 import ConversationList from "@/components/messaging/ConversationList";
 import MessageThread from "@/components/messaging/MessageThread";
 import Head from "next/head";
-import Meta from '@/components/Meta';
-import { motion } from 'framer-motion';
+import Meta from "@/components/Meta";
+import { motion } from "framer-motion";
 
 export default function Messaging() {
   const { user, loading: authLoading } = useAuth();
@@ -18,7 +18,7 @@ export default function Messaging() {
   // Check if user is authenticated
   useEffect(() => {
     if (!authLoading && !user) {
-      router.push('/login?redirect=/messaging');
+      router.push("/login?redirect=/messaging");
     }
   }, [user, authLoading, router]);
 
@@ -32,16 +32,16 @@ export default function Messaging() {
     handleResize();
 
     // Listen for window resize
-    window.addEventListener('resize', handleResize);
-    
+    window.addEventListener("resize", handleResize);
+
     // Cleanup
-    return () => window.removeEventListener('resize', handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, []);
 
   // Handle conversation selection
   const handleSelectConversation = (conversation) => {
     setSelectedConversation(conversation);
-    
+
     if (isMobileView) {
       setShowMessages(true);
     }
@@ -69,43 +69,43 @@ export default function Messaging() {
   return (
     <>
       <Meta title="Messages | FreeLanTalent" />
-      
+
       <Layout>
         <Head>
           <title>Messages | FreelanceHub</title>
         </Head>
-        
-        <motion.div 
-          className="container mx-auto px-4 py-8 max-w-5xl"
+
+        <motion.div
+          className="container mx-auto px-4 py-8 max-w-5xl mt-52"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.3 }}
         >
-          <h1 className="text-2xl font-bold mb-6">Messages</h1>
-          
+          <h1 className="text-2xl font-bold pt-10 ">Messages</h1>
+
           <div className="bg-white rounded-lg shadow-md overflow-hidden h-[calc(100vh-10rem)]">
             <div className="flex h-full">
               {/* Conversation List - Hidden on mobile when showing messages */}
-              <div 
+              <div
                 className={`
-                  ${isMobileView && showMessages ? 'hidden' : 'block'} 
+                  ${isMobileView && showMessages ? "hidden" : "block"} 
                   w-full md:w-1/3 border-r border-gray-200
                 `}
               >
-                <ConversationList 
+                <ConversationList
                   onSelectConversation={handleSelectConversation}
                   selectedConversationId={selectedConversation?.id}
                 />
               </div>
-              
+
               {/* Message Thread - Hidden on mobile when showing conversation list */}
-              <div 
+              <div
                 className={`
-                  ${isMobileView && !showMessages ? 'hidden' : 'block'} 
+                  ${isMobileView && !showMessages ? "hidden" : "block"} 
                   w-full md:w-2/3
                 `}
               >
-                <MessageThread 
+                <MessageThread
                   conversation={selectedConversation}
                   onBack={handleBack}
                 />
@@ -116,4 +116,4 @@ export default function Messaging() {
       </Layout>
     </>
   );
-} 
+}

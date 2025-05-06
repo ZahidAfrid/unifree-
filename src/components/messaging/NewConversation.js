@@ -140,7 +140,11 @@ export default function NewConversation({ onConversationCreated, onCancel }) {
       const conversationsSnapshot = await getDocs(conversationsQuery);
       const existingConversation = conversationsSnapshot.docs.find((doc) => {
         const participants = doc.data().participants || [];
-        return participants.includes(selectedUser.id);
+        return (
+          participants.length === 2 &&
+          participants.includes(user.uid) &&
+          participants.includes(selectedUser.id)
+        );
       });
 
       let conversationId;

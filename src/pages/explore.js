@@ -86,7 +86,7 @@ export default function Explore() {
   const [universityFilter, setUniversityFilter] = useState("");
   const [ratingFilter, setRatingFilter] = useState(0);
   const [searchQuery, setSearchQuery] = useState("");
-  const [budgetFilter, setBudgetFilter] = useState({ min: 0, max: 1000 });
+  const [budgetFilter, setBudgetFilter] = useState({ min: 0, max: Infinity });
   const [deadlineFilter, setDeadlineFilter] = useState("");
 
   // Helper function to check if user exists in the users collection
@@ -154,7 +154,6 @@ export default function Explore() {
         // Fetch all public projects directly
         const projectsQuery = query(
           collection(db, "projects"),
-          where("visibility", "==", "public"),
           orderBy("createdAt", "desc")
         );
 
@@ -399,15 +398,19 @@ export default function Explore() {
                   <div className="w-full sm:w-auto">
                     <select
                       value={budgetFilter.max}
-                      onChange={(e) =>
+                      onChange={(e) => {
+                        const value =
+                          e.target.value === "any"
+                            ? Infinity
+                            : Number(e.target.value);
                         setBudgetFilter({
                           ...budgetFilter,
-                          max: Number(e.target.value),
-                        })
-                      }
+                          max: value,
+                        });
+                      }}
                       className="block w-full pl-10 pr-10 py-2 text-base border border-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-lg bg-white text-gray-900 transition-all duration-200 shadow-sm"
                     >
-                      <option value={1000}>Any Budget</option>
+                      <option value="any">Any Budget</option>
                       <option value={100}>Under $100</option>
                       <option value={200}>Under $200</option>
                       <option value={500}>Under $500</option>

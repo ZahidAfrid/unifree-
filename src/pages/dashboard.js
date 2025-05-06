@@ -61,6 +61,7 @@ import {
   Timestamp,
   limit,
   updateDoc,
+  onSnapshot,
 } from "firebase/firestore";
 import Head from "next/head";
 import { Line } from "react-chartjs-2";
@@ -92,14 +93,12 @@ export default function Dashboard() {
   const [activeTab, setActiveTab] = useState("overview");
   const [loading, setLoading] = useState(true);
   const [profileData, setProfileData] = useState(null);
-  const [proposals, setProposals] = useState([]);
-  const [recentProjects, setRecentProjects] = useState([]);
+  const [acceptedProposals, setAcceptedProposals] = useState([]);
   const [stats, setStats] = useState({
-    proposalsSent: 0,
-    acceptedProposals: 0,
+    activeProjects: 0,
+    completedProjects: 0,
     totalEarnings: 0,
-    availableBalance: 0,
-    completionRate: 0,
+    pendingPayments: 0,
     averageRating: 0,
   });
   const [availability, setAvailability] = useState("available");
@@ -111,17 +110,17 @@ export default function Dashboard() {
 
   // Updated chart data with real-time data
   const [chartData, setChartData] = useState({
-    labels: [],
+    labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun"],
     datasets: [
       {
-        label: "Projects Completed",
-        data: [],
+        label: "Earnings",
+        data: [0, 0, 0, 0, 0, 0],
         borderColor: "rgb(75, 192, 192)",
         tension: 0.1,
       },
       {
-        label: "Earnings",
-        data: [],
+        label: "Projects Completed",
+        data: [0, 0, 0, 0, 0, 0],
         borderColor: "rgb(255, 99, 132)",
         tension: 0.1,
       },
@@ -136,7 +135,7 @@ export default function Dashboard() {
       },
       title: {
         display: true,
-        text: "Activity Overview",
+        text: "Earnings & Projects Overview",
       },
     },
     scales: {
@@ -167,14 +166,17 @@ export default function Dashboard() {
     }
   };
 
-  // Fetch freelancer data and proposals
+  // Fetch freelancer data and accepted proposals
   useEffect(() => {
     const fetchFreelancerData = async () => {
-      if (!user?.uid) return;
+      if (!user?.uid) {
+        console.log("No user UID available");
+        return;
+      }
 
       try {
         setLoading(true);
-        console.log("Fetching freelancer profile for user:", user.uid);
+        console.log("Starting to fetch freelancer data for user:", user.uid);
 
         // Fetch profile data
         const freelancerProfileDoc = await getDoc(
@@ -187,118 +189,119 @@ export default function Dashboard() {
           setProfileData(data);
           setAvailability(data.availability || "available");
 
-          // Update chart data with real profile data
-          const last6Months = Array.from({ length: 6 }, (_, i) => {
-            const d = new Date();
-            d.setMonth(d.getMonth() - i);
-            return d.toLocaleString("default", { month: "short" });
-          }).reverse();
-
-          setChartData((prev) => ({
-            ...prev,
-            labels: last6Months,
-            datasets: [
-              {
-                ...prev.datasets[0],
-                data: data.monthlyProjects || Array(6).fill(0),
-              },
-              {
-                ...prev.datasets[1],
-                data: data.monthlyEarnings || Array(6).fill(0),
-              },
-            ],
-          }));
-        } else {
-          console.log(
-            "No freelancer profile found, redirecting to registration"
+          // Set up real-time listener for accepted proposals
+          const proposalsQuery = query(
+            collection(db, "accepted_proposals"),
+            where("freelancerId", "==", user.uid),
+            orderBy("acceptedAt", "desc")
           );
-          console.warn("Please complete your freelancer profile first");
+
+          console.log("Setting up accepted proposals listener with query:", proposalsQuery);
+
+          const unsubscribe = onSnapshot(proposalsQuery, async (snapshot) => {
+            console.log("Accepted proposals snapshot received:", snapshot.size, "documents");
+            
+            const proposalsList = await Promise.all(
+              snapshot.docs.map(async (proposalDoc) => {
+                const proposalData = proposalDoc.data();
+                console.log("Processing accepted proposal:", proposalDoc.id, proposalData);
+                
+                // Get the associated project for each proposal
+                let projectData = null;
+                if (proposalData.projectId) {
+                  console.log("Fetching project data for proposal:", proposalData.projectId);
+                  const projectDoc = await getDoc(
+                    doc(db, "projects", proposalData.projectId)
+                  );
+                  if (projectDoc.exists()) {
+                    projectData = projectDoc.data();
+                    console.log("Project data found:", projectData);
+                  } else {
+                    console.log("Project not found for ID:", proposalData.projectId);
+                  }
+                }
+
+                return {
+                  id: proposalDoc.id,
+                  ...proposalData,
+                  project: projectData,
+                };
+              })
+            );
+
+            console.log("Final accepted proposals list:", proposalsList);
+            setAcceptedProposals(proposalsList);
+
+            // Calculate stats
+            const totalEarnings = proposalsList.reduce((sum, p) => {
+              return sum + (parseFloat(p.bid) || 0);
+            }, 0);
+
+            setStats({
+              activeProjects: proposalsList.length,
+              completedProjects: 0, // Update this when you add completion status
+              totalEarnings,
+              pendingPayments: totalEarnings,
+              averageRating: data.averageRating || 0,
+            });
+
+            // Update chart data with new accepted proposals
+            const currentMonth = new Date().getMonth();
+            const monthlyEarnings = Array(6).fill(0);
+            const monthlyProjects = Array(6).fill(0);
+
+            proposalsList.forEach((proposal) => {
+              if (proposal.acceptedAt) {
+                const acceptedDate = proposal.acceptedAt.toDate();
+                const monthDiff = currentMonth - acceptedDate.getMonth();
+                if (monthDiff >= 0 && monthDiff < 6) {
+                  monthlyEarnings[monthDiff] += parseFloat(proposal.bid) || 0;
+                  monthlyProjects[monthDiff]++;
+                }
+              }
+            });
+
+            setChartData({
+              labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun"],
+              datasets: [
+                {
+                  label: "Earnings",
+                  data: monthlyEarnings,
+                  borderColor: "rgb(75, 192, 192)",
+                  tension: 0.1,
+                },
+                {
+                  label: "Projects Completed",
+                  data: monthlyProjects,
+                  borderColor: "rgb(255, 99, 132)",
+                  tension: 0.1,
+                },
+              ],
+            });
+          });
+
+          return () => {
+            console.log("Cleaning up accepted proposals listener");
+            unsubscribe();
+          };
+        } else {
+          console.log("No freelancer profile found, redirecting to registration");
           router.push("/freelancer-registration");
           return;
         }
-
-        // Fetch proposals made by the freelancer
-        const proposalsQuery = query(
-          collection(db, "proposals"),
-          where("freelancerId", "==", user.uid),
-          orderBy("createdAt", "desc")
-        );
-
-        const proposalsSnapshot = await getDocs(proposalsQuery);
-        const proposalsList = await Promise.all(
-          proposalsSnapshot.docs.map(async (proposalDoc) => {
-            const proposalData = proposalDoc.data();
-
-            // Get the associated project for each proposal
-            let projectData = null;
-            if (proposalData.projectId) {
-              const projectDoc = await getDoc(
-                doc(db, "projects", proposalData.projectId)
-              );
-              if (projectDoc.exists()) {
-                projectData = projectDoc.data();
-              }
-            }
-
-            return {
-              id: proposalDoc.id,
-              ...proposalData,
-              project: projectData,
-            };
-          })
-        );
-
-        console.log("Proposals data:", proposalsList);
-        setProposals(proposalsList);
-
-        // Fetch recent available projects
-        const recentProjectsQuery = query(
-          collection(db, "projects"),
-          where("status", "==", "open"),
-          orderBy("createdAt", "desc"),
-          limit(5)
-        );
-
-        const recentProjectsSnapshot = await getDocs(recentProjectsQuery);
-        const recentProjectsList = recentProjectsSnapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
-
-        setRecentProjects(recentProjectsList);
-
-        // Calculate freelancer stats
-        const acceptedProposals = proposalsList.filter(
-          (p) => p.status === "accepted"
-        ).length;
-
-        setStats({
-          proposalsSent: proposalsList.length,
-          acceptedProposals: acceptedProposals,
-          totalEarnings: proposalsList.reduce((sum, p) => {
-            return p.status === "completed"
-              ? sum + parseFloat(p.bidAmount || p.amount || 0)
-              : sum;
-          }, 0),
-          availableBalance: 0, // This would come from a payment system
-          completionRate:
-            proposalsList.length > 0
-              ? ((acceptedProposals / proposalsList.length) * 100).toFixed(1)
-              : 0,
-          averageRating: 4.7, // This would come from reviews
-        });
       } catch (error) {
-        console.error("Error fetching freelancer data:", error);
-        console.warn("Failed to load freelancer data");
+        console.error("Error in fetchFreelancerData:", error);
+        toast.error("Failed to load dashboard data");
       } finally {
         setLoading(false);
       }
     };
 
     if (!authLoading && user?.uid) {
+      console.log("Starting data fetch for user:", user.uid);
       fetchFreelancerData();
     } else {
-      console.log("Auth loading or no user UID");
+      console.log("Waiting for auth to complete or user to be available");
     }
   }, [authLoading, user, router]);
 
@@ -383,8 +386,8 @@ export default function Dashboard() {
       try {
         await deleteDoc(doc(db, "proposals", proposalId));
         toast.success("Proposal deleted successfully");
-        setProposals(
-          proposals.filter((proposal) => proposal.id !== proposalId)
+        setAcceptedProposals(
+          acceptedProposals.filter((proposal) => proposal.id !== proposalId)
         );
       } catch (error) {
         console.error("Error deleting proposal:", error);
@@ -476,27 +479,33 @@ export default function Dashboard() {
                   </h2>
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
-                      <span className="text-gray-600">Completed Projects</span>
+                      <span className="text-gray-600">Active Projects</span>
                       <span className="font-semibold">
-                        {profileData?.completedProjects || 0}
+                        {stats.activeProjects}
                       </span>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-gray-600">Active Projects</span>
+                      <span className="text-gray-600">Completed Projects</span>
                       <span className="font-semibold">
-                        {profileData?.activeProjects || 0}
+                        {stats.completedProjects}
                       </span>
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-gray-600">Total Earnings</span>
                       <span className="font-semibold">
-                        ${profileData?.totalEarnings || 0}
+                        ${stats.totalEarnings.toFixed(2)}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-gray-600">Pending Payments</span>
+                      <span className="font-semibold">
+                        ${stats.pendingPayments.toFixed(2)}
                       </span>
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-gray-600">Client Rating</span>
                       <span className="font-semibold">
-                        {profileData?.rating || "0.0"}/5.0
+                        {stats.averageRating.toFixed(1)}/5.0
                       </span>
                     </div>
                   </div>
@@ -570,7 +579,7 @@ export default function Dashboard() {
                     <div className="space-y-8">
                       <div>
                         <h2 className="text-lg font-semibold text-gray-900 mb-4">
-                          Activity Overview
+                          Earnings & Projects Overview
                         </h2>
                         <div className="h-80">
                           <Line data={chartData} options={chartOptions} />
@@ -581,28 +590,27 @@ export default function Dashboard() {
                           Recent Activity
                         </h2>
                         <div className="space-y-4">
-                          {profileData?.recentActivity?.map(
-                            (activity, index) => (
-                              <div
-                                key={index}
-                                className="flex items-center space-x-4 p-4 bg-gray-50 rounded-lg"
-                              >
-                                <div className="flex-shrink-0">
-                                  <div className="h-10 w-10 rounded-full bg-indigo-100 flex items-center justify-center">
-                                    <FaBriefcase className="text-indigo-600" />
-                                  </div>
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                  <p className="text-sm font-medium text-gray-900">
-                                    {activity.description}
-                                  </p>
-                                  <p className="text-sm text-gray-500">
-                                    {activity.timestamp}
-                                  </p>
+                          {acceptedProposals.map((proposal) => (
+                            <div
+                              key={proposal.id}
+                              className="flex items-center space-x-4 p-4 bg-gray-50 rounded-lg"
+                            >
+                              <div className="flex-shrink-0">
+                                <div className="h-10 w-10 rounded-full bg-indigo-100 flex items-center justify-center">
+                                  <FaBriefcase className="text-indigo-600" />
                                 </div>
                               </div>
-                            )
-                          ) || (
+                              <div className="flex-1 min-w-0">
+                                <p className="text-sm font-medium text-gray-900">
+                                  Project "{proposal.projectTitle}" was accepted
+                                </p>
+                                <p className="text-sm text-gray-500">
+                                  {new Date(proposal.acceptedAt.toDate()).toLocaleDateString()}
+                                </p>
+                              </div>
+                            </div>
+                          ))}
+                          {acceptedProposals.length === 0 && (
                             <p className="text-gray-500 text-center py-4">
                               No recent activity
                             </p>
@@ -619,46 +627,75 @@ export default function Dashboard() {
                           Active Projects
                         </h2>
                         <button
-                          onClick={() => router.push("/explore")}
+                          onClick={() => router.push("/projects")}
                           className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
                         >
-                          <FaPlus className="mr-2" />
-                          New Project
+                          <FaSearch className="mr-2" />
+                          Find Projects
                         </button>
                       </div>
                       <div className="space-y-4">
-                        {[1, 2, 3].map((project) => (
+                        {acceptedProposals.map((proposal) => (
                           <div
-                            key={project}
+                            key={proposal.id}
                             className="border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow"
                           >
                             <div className="flex justify-between items-start">
                               <div>
                                 <h3 className="text-lg font-medium text-gray-900">
-                                  Project Title {project}
+                                  {proposal.projectTitle}
                                 </h3>
                                 <p className="text-sm text-gray-500 mt-1">
-                                  Client: Client Name • Due: Dec 31, 2023
+                                  Client: {proposal.clientName}
                                 </p>
                               </div>
                               <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
-                                In Progress
+                                {proposal.status}
                               </span>
                             </div>
                             <div className="mt-4">
-                              <div className="flex items-center justify-between text-sm text-gray-500">
-                                <span>Progress</span>
-                                <span>60%</span>
-                              </div>
-                              <div className="mt-2 w-full bg-gray-200 rounded-full h-2">
-                                <div
-                                  className="bg-indigo-600 h-2 rounded-full"
-                                  style={{ width: "60%" }}
-                                ></div>
+                              <p className="text-gray-600">
+                                {proposal.projectDescription}
+                              </p>
+                              <div className="mt-4 flex items-center justify-between">
+                                <div className="flex items-center space-x-4 text-sm text-gray-500">
+                                  <div className="flex items-center">
+                                    <FaMoneyBillWave className="mr-1" />$
+                                    {proposal.bid}
+                                  </div>
+                                  <div className="flex items-center">
+                                    <FaRegCalendarAlt className="mr-1" />
+                                    {new Date(proposal.acceptedAt.toDate()).toLocaleDateString()}
+                                  </div>
+                                </div>
+                                <button
+                                  onClick={() => router.push(`/projects/${proposal.projectId}`)}
+                                  className="text-blue-600 hover:text-blue-700"
+                                >
+                                  <FaEye className="w-5 h-5" />
+                                </button>
                               </div>
                             </div>
                           </div>
                         ))}
+                        {acceptedProposals.length === 0 && (
+                          <div className="text-center py-8">
+                            <FaInbox className="mx-auto h-12 w-12 text-gray-400" />
+                            <h3 className="mt-2 text-sm font-medium text-gray-900">No active projects</h3>
+                            <p className="mt-1 text-sm text-gray-500">
+                              You don&apos;t have any active projects at the moment.
+                            </p>
+                            <div className="mt-6">
+                              <button
+                                onClick={() => router.push("/projects")}
+                                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
+                              >
+                                <FaSearch className="mr-2" />
+                                Find Projects
+                              </button>
+                            </div>
+                          </div>
+                        )}
                       </div>
                     </div>
                   )}
