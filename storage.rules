@@ -1,0 +1,45 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Project Documents - allow any authenticated user
+    match /project_documents/{projectId}/{fileName} {
+      allow read, write: if isAuthenticated();
+    }
+
+    // Profile Images - public read, authenticated write
+    match /profile_images/{userId}/{fileName} {
+      allow read: if true;
+      allow write: if isAuthenticated();
+    }
+
+    // Project Attachments - allow any authenticated user
+    match /project_attachments/{projectId}/{fileName} {
+      allow read, write: if isAuthenticated();
+    }
+
+    // Shared Files - allow any authenticated user
+    match /shared_files/{projectId}/{fileName} {
+      allow read, write: if isAuthenticated();
+    }
+
+    // Messages Attachments - allow any authenticated user
+    match /message_attachments/{conversationId}/{fileName} {
+      allow read, write: if isAuthenticated();
+    }
+
+    // Handover Documents - allow any authenticated user
+    match /handover_documents/{projectId}/{fileName} {
+      allow read, write: if isAuthenticated();
+    }
+
+    // Allow all authenticated access for other paths
+    match /{allPaths=**} {
+      allow read, write: if isAuthenticated();
+    }
+  }
+} 

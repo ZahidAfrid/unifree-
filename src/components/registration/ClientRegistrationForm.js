@@ -15,12 +15,12 @@ import {
 } from "react-icons/fa";
 import toast from "react-hot-toast";
 import { db } from "@/firebase/firebase.config";
-import { doc, setDoc } from "firebase/firestore";
+import { doc, setDoc, updateDoc, writeBatch } from "firebase/firestore";
 import { useAuth } from "@/contexts/AuthContext";
 
 export default function ClientRegistrationForm({ onComplete }) {
   const router = useRouter();
-  const { user, updateUserType } = useAuth(); // ✅ Correct usage
+  const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState({
@@ -145,7 +145,6 @@ export default function ClientRegistrationForm({ onComplete }) {
     console.log("Starting client profile submission");
 
     try {
-      // Save to Firestore
       const userId = user.uid;
       const profileData = {
         ...formData,
@@ -154,39 +153,29 @@ export default function ClientRegistrationForm({ onComplete }) {
         userType: "client",
       };
 
-      console.log("Setting user type to client in users collection");
-
-      // First, ensure the user type is set correctly in the users collection
-      await setDoc(
-        doc(db, "users", userId),
-        {
-          userType: "client",
-          userTypeUpdatedAt: new Date().toISOString(),
-        },
-        { merge: true }
-      );
-
-      console.log("Saving client registration data");
-      await updateUserType(userId, "client");
-      // Then update the client registration data
-      await setDoc(doc(db, "client_registration", userId), profileData, {
-        merge: true,
+      // Update both the users collection and client_registration collection
+      const batch = writeBatch(db); // ✅ correct
+      
+      // Update users collection
+      const userRef = doc(db, "users", userId);
+      batch.update(userRef, {
+        userType: "client",
+        clientProfileCompleted: true,
+        userTypeUpdatedAt: new Date().toISOString(),
       });
 
-      // Clear any lingering selection flags
-      sessionStorage.removeItem("selectingUserType");
-      sessionStorage.removeItem("selectedUserType");
+      // Update client_registration collection
+      const clientRef = doc(db, "client_registration", userId);
+      batch.set(clientRef, profileData, { merge: true });
+
+      // Commit the batch
+      await batch.commit();
 
       toast.success("Profile created successfully!");
       console.log("Client profile created successfully");
 
-      if (onComplete) {
-        console.log("Calling onComplete callback");
-        onComplete();
-      } else {
-        console.log("Redirecting to client dashboard");
-        router.push("/client-dashboard");
-      }
+      // Use window.location for a hard redirect to ensure state is fresh
+      window.location.href = "/client-dashboard";
     } catch (error) {
       console.error("Error updating profile:", error);
       toast.error(error.message || "Failed to create profile");

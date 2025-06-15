@@ -14,7 +14,7 @@ import { doc, setDoc, serverTimestamp } from "firebase/firestore";
 import { db } from "@/firebase/firebase.config";
 
 // Options for dropdown fields
-import { categoryOptions, experienceOptions, availabilityOptions } from "@/utils/formOptions";
+import { categoryOptions, availabilityOptions } from "@/utils/formOptions";
 
 export default function FreelancerRegistrationForm() {
   const router = useRouter();
@@ -25,7 +25,6 @@ export default function FreelancerRegistrationForm() {
     professionalTitle: "",
     skills: "",
     primaryCategory: "web-development",
-    experienceYears: "1-2",
     education: "",
     hourlyRate: "",
     location: "",
@@ -45,6 +44,15 @@ export default function FreelancerRegistrationForm() {
       return;
     }
 
+    console.log("🚀 Starting freelancer registration process...");
+    console.log("📊 User details:", {
+      uid: user.uid,
+      email: user.email,
+      displayName: user.displayName,
+      currentUserType: user.userType
+    });
+    console.log("📝 Form data:", formData);
+
     setIsLoading(true);
 
     try {
@@ -54,14 +62,19 @@ export default function FreelancerRegistrationForm() {
         .map((skill) => skill.trim())
         .filter((skill) => skill !== "");
 
+      console.log("📋 Processed skills array:", skillsArray);
+
       // First, ensure the user type is set correctly in the users collection
+      console.log("👤 Updating user type in users collection...");
       await setDoc(doc(db, "users", user.uid), {
         userType: "freelancer",
         userTypeUpdatedAt: new Date().toISOString()
       }, { merge: true });
+      console.log("✅ User type updated successfully");
 
       // Save to Firestore in the freelancer_profiles collection
-      await setDoc(doc(db, "freelancer_profiles", user.uid), {
+      console.log("📄 Creating freelancer profile...");
+      const profileData = {
         ...formData,
         userId: user.uid,
         email: user.email,
@@ -71,12 +84,27 @@ export default function FreelancerRegistrationForm() {
         primaryCategory: formData.primaryCategory,
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
-      });
+      };
+      
+      console.log("📄 Profile data to save:", profileData);
+      
+      await setDoc(doc(db, "freelancer_profiles", user.uid), profileData);
+      console.log("✅ Freelancer profile created successfully");
 
       toast.success("Your freelancer profile has been created!");
-      router.push("/dashboard");
+      
+      console.log("🔄 Redirecting to dashboard...");
+      // Add a small delay to ensure the database updates are complete
+      setTimeout(() => {
+        router.push("/dashboard");
+      }, 1000);
     } catch (error) {
-      console.error("Error creating freelancer profile:", error);
+      console.error("❌ Error creating freelancer profile:", error);
+      console.error("Error details:", {
+        code: error.code,
+        message: error.message,
+        stack: error.stack
+      });
       toast.error("Failed to create profile. Please try again.");
     } finally {
       setIsLoading(false);
@@ -171,25 +199,6 @@ export default function FreelancerRegistrationForm() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Years of Experience <span className="text-red-500">*</span>
-              </label>
-              <select
-                name="experienceYears"
-                value={formData.experienceYears}
-                onChange={handleChange}
-                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-                required
-              >
-                {experienceOptions.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
                 Education
               </label>
               <input
@@ -199,6 +208,23 @@ export default function FreelancerRegistrationForm() {
                 onChange={handleChange}
                 className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
                 placeholder="Bachelor's in Computer Science"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                <div className="flex items-center">
+                  <FaMapMarkerAlt className="mr-1 text-green-600" />
+                  Location
+                </div>
+              </label>
+              <input
+                type="text"
+                name="location"
+                value={formData.location}
+                onChange={handleChange}
+                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                placeholder="New York, NY"
               />
             </div>
 

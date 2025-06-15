@@ -16,117 +16,134 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [registrationChecked, setRegistrationChecked] = useState(false);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-      console.log(
-        "Auth state changed:",
-        firebaseUser ? "User logged in" : "No user"
-      );
-
-      if (firebaseUser) {
-        try {
-          const uid = firebaseUser.uid;
-          console.log("Checking client registration for:", uid);
-
-          // Check if user is a client
-          const clientDoc = await getDoc(doc(db, "client_registration", uid));
-          if (clientDoc.exists()) {
-            console.log("Client registration found:", clientDoc.data());
-            const clientData = {
-              ...firebaseUser,
-              ...clientDoc.data(),
-              userType: "client",
-              clientProfileCompleted: true,
-            };
-            console.log("Setting user as client:", clientData);
-            setUser(clientData);
-            setLoading(false);
-            return;
-          } else {
-            console.log("No client registration found");
-          }
-
-          // Check if user is a freelancer
-          const freelancerDoc = await getDoc(
-            doc(db, "freelancer_profiles", uid)
-          );
-          if (freelancerDoc.exists()) {
-            console.log("Freelancer profile found");
-            setUser({
-              ...firebaseUser,
-              ...freelancerDoc.data(),
-              userType: "freelancer",
-              freelancerProfileCompleted: true,
-            });
-            setLoading(false);
-            return;
-          } else {
-            console.log("No freelancer profile found");
-          }
-
-          // Fallback to users collection
-          console.log("Checking generic user profile");
-          const genericUserDoc = await getDoc(doc(db, "users", uid));
-          if (genericUserDoc.exists()) {
-            console.log("Generic user found:", genericUserDoc.data());
-            setUser({
-              ...firebaseUser,
-              ...genericUserDoc.data(),
-            });
-          } else {
-            console.log("No user profile found, using basic Firebase user");
-            setUser(firebaseUser);
-          }
-        } catch (err) {
-          console.error("Error fetching user info:", err);
-          setUser(firebaseUser);
-        }
-      } else {
+      if (!firebaseUser) {
         setUser(null);
+        setLoading(false);
+        setRegistrationChecked(false);
+        return;
       }
-      setLoading(false);
+
+      try {
+        const uid = firebaseUser.uid;
+        
+        // Get user document first
+        const userDoc = await getDoc(doc(db, "users", uid));
+        const userData = userDoc.exists() ? userDoc.data() : {};
+
+        // Check client registration only if user is a client
+        if (userData.userType === "client") {
+          const clientDoc = await getDoc(doc(db, "client_registration", uid));
+          const clientData = clientDoc.exists() ? clientDoc.data() : {};
+          
+          setUser({
+            ...firebaseUser,
+            ...userData,
+            ...clientData,
+            userType: "client",
+            clientProfileCompleted: clientDoc.exists(),
+          });
+        } 
+        // Check freelancer profile only if user is a freelancer
+        else if (userData.userType === "freelancer") {
+          console.log("🔍 User is a freelancer, checking profile completion...");
+          const freelancerDoc = await getDoc(doc(db, "freelancer_profiles", uid));
+          const freelancerData = freelancerDoc.exists() ? freelancerDoc.data() : {};
+          
+          console.log("📄 Freelancer profile exists:", freelancerDoc.exists());
+          if (freelancerDoc.exists()) {
+            console.log("✅ Freelancer profile data loaded:", {
+              fullName: freelancerData.fullName,
+              skills: freelancerData.skills?.length || 0
+            });
+          }
+          
+          setUser({
+            ...firebaseUser,
+            ...userData,
+            ...freelancerData,
+            userType: "freelancer",
+            freelancerProfileCompleted: freelancerDoc.exists(),
+          });
+        } else {
+          // No user type set yet
+          setUser({
+            ...firebaseUser,
+            ...userData,
+          });
+        }
+      } catch (error) {
+        console.error("Error loading user data:", error);
+        setUser(firebaseUser);
+      } finally {
+        setLoading(false);
+        setRegistrationChecked(true);
+      }
     });
 
     return () => unsubscribe();
   }, []);
 
   const signUp = async (email, password, fullName, userType = "freelancer") => {
-    const userCredential = await createUserWithEmailAndPassword(
-      auth,
-      email,
-      password
-    );
-    const user = userCredential.user;
+    try {
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
 
-    await updateProfile(user, { displayName: fullName });
+      // Update profile with display name
+      await updateProfile(userCredential.user, {
+        displayName: fullName,
+      });
 
-    // ✅ Save selected user type in Firestore
-    await setDoc(doc(db, "users", user.uid), {
-      fullName,
-      email,
-      userType, // ✅ Save whether 'client' or 'freelancer'
-      createdAt: new Date(),
-    });
+      // Save user data in Firestore
+      await setDoc(doc(db, "users", userCredential.user.uid), {
+        email,
+        fullName,
+        userType,
+        createdAt: new Date().toISOString(),
+        profileCompleted: false,
+      });
 
-    return userCredential;
+      return userCredential;
+    } catch (error) {
+      console.error("Error during signup:", error);
+      throw error;
+    }
   };
 
   const signIn = async (email, password) => {
-    return await signInWithEmailAndPassword(auth, email, password);
+    try {
+      const userCredential = await signInWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
+      return userCredential;
+    } catch (error) {
+      console.error("Error during signin:", error);
+      throw error;
+    }
   };
 
   const signOut = async () => {
-    await firebaseSignOut(auth);
-    toast.success("Signed out");
-    setUser(null);
+    try {
+      await firebaseSignOut(auth);
+      setUser(null);
+      setRegistrationChecked(false);
+    } catch (error) {
+      console.error("Error during signout:", error);
+      throw error;
+    }
   };
 
   const updateUserType = async (userId, userType) => {
-    console.log(`Updating user ${userId} to type: ${userType}`);
-
     try {
-      // 1. Update the user type in Firestore
+      console.log("🔄 Updating user type in AuthContext:", { userId, userType });
       await setDoc(
         doc(db, "users", userId),
         {
@@ -135,25 +152,9 @@ export function AuthProvider({ children }) {
         },
         { merge: true }
       );
-
-      // 2. Update the local user state with the new user type
-      setUser((prev) => {
-        if (!prev) return null;
-
-        const updatedUser = {
-          ...prev,
-          userType,
-        };
-
-        console.log("Updated local user state:", updatedUser);
-        return updatedUser;
-      });
-
-      // 3. Return true to indicate success
-      return true;
+      console.log("✅ User type updated successfully in AuthContext");
     } catch (error) {
-      console.error("Error updating user type:", error);
-      // Re-throw the error so it can be caught by the caller
+      console.error("❌ Error updating user type in AuthContext:", error);
       throw error;
     }
   };
@@ -165,77 +166,45 @@ export function AuthProvider({ children }) {
   };
 
   const hasCompletedClientRegistration = async () => {
-    if (!user) return false;
-    try {
-      console.log("Checking if client registration completed for:", user.uid);
-      const clientDoc = await getDoc(doc(db, "client_registration", user.uid));
-      const exists = clientDoc.exists();
-      console.log("Client registration exists:", exists);
-      return exists;
-    } catch (error) {
-      console.error("Error checking client registration:", error);
-      return false;
-    }
+    if (!user || !registrationChecked) return false;
+    return user.clientProfileCompleted || false;
   };
 
   const hasCompletedFreelancerRegistration = async () => {
-    if (!user) return false;
-    try {
-      console.log(
-        "Checking if freelancer registration completed for:",
-        user.uid
-      );
-      const freelancerDoc = await getDoc(
-        doc(db, "freelancer_profiles", user.uid)
-      );
-      const exists = freelancerDoc.exists();
-      console.log("Freelancer registration exists:", exists);
-      return exists;
-    } catch (error) {
-      console.error("Error checking freelancer registration:", error);
-      return false;
-    }
+    if (!user || !registrationChecked) return false;
+    return user.freelancerProfileCompleted || false;
   };
 
   const getDashboardRoute = async () => {
     if (!user) return "/login";
 
     if (user.userType === "client") {
-      const hasCompletedRegistration = await hasCompletedClientRegistration();
-      return hasCompletedRegistration
-        ? "/client-dashboard"
-        : "/client-registration";
+      return user.clientProfileCompleted ? "/client-dashboard" : "/client-registration";
     } else if (user.userType === "freelancer") {
-      // Check if freelancer has completed profile
-      const hasCompletedRegistration =
-        await hasCompletedFreelancerRegistration();
-      return hasCompletedRegistration
-        ? "/dashboard"
-        : "/freelancer-registration";
+      return user.freelancerProfileCompleted ? "/dashboard" : "/freelancer-registration";
     } else {
-      // No user type selected yet
       return "/select-user-type";
     }
   };
 
   return (
-<AuthContext.Provider
-  value={{
-    user,
-    loading,
-    error,
-    signUp,
-    signIn,
-    signOut,
-    updateUserType,
-    getCurrentUserProfile,
-    hasCompletedClientRegistration,
-    hasCompletedFreelancerRegistration,
-    getDashboardRoute,
-  }}
->
-  {children}
-</AuthContext.Provider>
+    <AuthContext.Provider
+      value={{
+        user,
+        loading,
+        error,
+        signUp,
+        signIn,
+        signOut,
+        updateUserType,
+        getCurrentUserProfile,
+        hasCompletedClientRegistration,
+        hasCompletedFreelancerRegistration,
+        getDashboardRoute,
+      }}
+    >
+      {children}
+    </AuthContext.Provider>
   );
 }
 

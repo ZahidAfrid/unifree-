@@ -6,6 +6,7 @@ import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import { useAuth } from "@/contexts/AuthContext";
+import { useDashboardNavigation } from "@/components/DashboardRedirect";
 import illustration from "../assets/images/Image2.png";
 import Enhancing from "../assets/images/img4.png";
 import {
@@ -59,6 +60,7 @@ export default function Home() {
   const scrollRef = useRef(null);
   const router = useRouter();
   const { user } = useAuth();
+  const navigateToDashboard = useDashboardNavigation();
   const [featuredProjects, setFeaturedProjects] = useState([]);
   const [topFreelancers, setTopFreelancers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -315,7 +317,7 @@ export default function Home() {
               >
                 {user ? (
                   <button
-                    onClick={() => router.push("/dashboard")}
+                    onClick={navigateToDashboard}
                     className="bg-yellow-400 text-gray-900 font-semibold px-6 py-3 rounded-full shadow-lg hover:bg-yellow-500 transition text-sm md:text-base w-full sm:w-auto flex items-center justify-center"
                   >
                     <FiTrendingUp className="mr-2" />

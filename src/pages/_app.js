@@ -49,79 +49,76 @@ export default function MyApp({ Component, pageProps }) {
 // Separate component to use hooks within the context providers
 function AppContent({ Component, pageProps }) {
   const router = useRouter();
-  const {
-    user,
-    loading: authLoading,
-    hasCompletedClientRegistration,
-    hasCompletedFreelancerRegistration,
-  } = useAuth();
-  const [isSelectionInProgress, setIsSelectionInProgress] = useState(false);
-
-  // Check if user is in the middle of selecting a user type
-  useEffect(() => {
-    const checkSelectionStatus = () => {
-      const selectingType =
-        sessionStorage.getItem("selectingUserType") === "true";
-      setIsSelectionInProgress(selectingType);
-    };
-
-    checkSelectionStatus();
-
-    // Listen for storage changes in case the selection status changes
-    window.addEventListener("storage", checkSelectionStatus);
-    return () => window.removeEventListener("storage", checkSelectionStatus);
-  }, []);
+  const { user, loading: authLoading } = useAuth();
+  const [isInitialized, setIsInitialized] = useState(false);
 
   useEffect(() => {
-    // Redirect logic for authenticated users
+    if (!router.isReady || authLoading) return;
+
     const handleRouting = async () => {
-      if (authLoading || !user) return;
-
-      const publicPaths = ["/", "/explore", "/contact", "/about"];
-      if (publicPaths.includes(router.pathname)) return; // ✅ EXIT EARLY
-
-      const protectedPaths = [
-        "/client-dashboard",
-        "/client-registration",
-        "/freelancer-registration",
-        "/dashboard",
-        "/messages",
-        "/settings",
-      ];
-
-      const isProtectedRoute = protectedPaths.some((path) =>
-        router.pathname.startsWith(path)
-      );
-
-      if (isProtectedRoute) {
-        if (user.userType === "client") {
-          const isClientComplete = await hasCompletedClientRegistration();
-          if (!isClientComplete) {
-            router.push("/client-registration");
-          }
-        } else if (user.userType === "freelancer") {
-          const isFreelancerComplete =
-            await hasCompletedFreelancerRegistration();
-          if (!isFreelancerComplete) {
-            router.push("/freelancer-registration");
-          }
-        } else {
-          router.push("/select-user-type");
+      try {
+        // Public paths that don't require authentication
+        const publicPaths = ["/", "/explore", "/contact", "/about", "/login", "/signup"];
+        if (publicPaths.includes(router.pathname)) {
+          setIsInitialized(true);
+          return;
         }
+
+        // If not authenticated and not on a public path, redirect to login
+        if (!user) {
+          const returnUrl = encodeURIComponent(router.asPath);
+          router.replace(`/login?redirect=${returnUrl}`);
+          return;
+        }
+
+        // Protected routes handling
+        const protectedPaths = [
+          "/client-dashboard",
+          "/client-registration",
+          "/freelancer-registration",
+          "/dashboard",
+          "/messages",
+          "/settings",
+        ];
+
+        const isProtectedRoute = protectedPaths.some((path) =>
+          router.pathname.startsWith(path)
+        );
+
+        if (isProtectedRoute) {
+          if (user.userType === "client") {
+            if (!user.clientProfileCompleted && router.pathname !== "/client-registration") {
+              router.replace("/client-registration");
+              return;
+            }
+          } else if (user.userType === "freelancer") {
+            if (!user.freelancerProfileCompleted && router.pathname !== "/freelancer-registration") {
+              router.replace("/freelancer-registration");
+              return;
+            }
+          } else if (router.pathname !== "/select-user-type") {
+            router.replace("/select-user-type");
+            return;
+          }
+        }
+
+        setIsInitialized(true);
+      } catch (error) {
+        console.error("Error in routing:", error);
+        setIsInitialized(true);
       }
     };
 
     handleRouting();
-  }, [
-    authLoading,
-    user,
-    router,
-    hasCompletedClientRegistration,
-    hasCompletedFreelancerRegistration,
-    isSelectionInProgress,
-  ]);
+  }, [router.isReady, authLoading, user, router]);
 
-  // Only redirect if needed and not already on a type-specific page
+  if (!isInitialized || authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <LoadingSpinner size="lg" text="Loading..." />
+      </div>
+    );
+  }
 
   return (
     <Layout>

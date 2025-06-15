@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
+import { useDashboardNavigation } from '@/components/DashboardRedirect';
 import { db } from '@/firebase/firebase.config';
 import { motion } from 'framer-motion';
 import { toast } from 'react-hot-toast';
@@ -26,6 +27,7 @@ export default function Profile() {
   const [skillInput, setSkillInput] = useState('');
   const router = useRouter();
   const { user } = useAuth();
+  const navigateToDashboard = useDashboardNavigation();
 
   useEffect(() => {
     if (user) {
@@ -127,12 +129,12 @@ export default function Profile() {
             <div className="p-6">
               <div className="flex items-center justify-between mb-6">
                 <h1 className="text-2xl font-bold text-gray-900">Edit Profile</h1>
-                <Link 
-                  href="/dashboard" 
+                <button 
+                  onClick={navigateToDashboard}
                   className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                 >
                   Back to Dashboard
-                </Link>
+                </button>
               </div>
 
               <form onSubmit={handleSubmit} className="space-y-6">
@@ -363,12 +365,12 @@ export default function Profile() {
                 </div>
 
                 <div className="flex justify-end space-x-3">
-                  <Link 
-                    href="/dashboard" 
+                  <button 
+                    onClick={navigateToDashboard}
                     className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
                   >
                     Cancel
-                  </Link>
+                  </button>
                   <button
                     type="submit"
                     disabled={saving}

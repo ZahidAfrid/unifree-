@@ -60,7 +60,9 @@ export default function SignUp() {
       }
 
       // Store user type before signup
-      localStorage.setItem("userType", formData.userType);
+      localStorage.setItem("userType", formData.userType); // still needed for fallback
+      sessionStorage.setItem("selectedUserType", formData.userType);
+      sessionStorage.setItem("selectingUserType", "true");
 
       // Create the user account
       await signUp(

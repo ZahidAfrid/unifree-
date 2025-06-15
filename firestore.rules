@@ -1,10 +1,63 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isProjectParticipant(projectId) {
+      return isAuthenticated() && (
+        exists(/databases/$(database)/documents/projects/$(projectId)) &&
+        (
+          get(/databases/$(database)/documents/projects/$(projectId)).data.clientId == request.auth.uid ||
+          get(/databases/$(database)/documents/projects/$(projectId)).data.freelancerId == request.auth.uid
+        )
+      );
+    }
 
-    // ✅ Users - allow only the logged-in user to access their profile
+    // Projects collection
+    match /projects/{projectId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow update: if isProjectParticipant(projectId);
+      allow delete: if isAuthenticated() && resource.data.clientId == request.auth.uid;
+    }
+
+    // Project Documents collection
+    match /project_documents/{documentId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow update, delete: if isAuthenticated();
+    }
+
+    // Users collection
     match /users/{userId} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // Messages collection
+    match /messages/{messageId} {
+      allow read: if isAuthenticated() && 
+        (resource.data.senderId == request.auth.uid || 
+         resource.data.receiverId == request.auth.uid);
+      allow create: if isAuthenticated();
+    }
+
+    // Reviews collection
+    match /reviews/{reviewId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow update, delete: if isAuthenticated() && resource.data.clientId == request.auth.uid;
+    }
+
+    // Notifications collection - simplified rules
+    match /notifications/{notificationId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated();
+      allow delete: if isAuthenticated();
     }
 
     // ✅ Freelancer Profiles - public read, self write
@@ -23,27 +76,26 @@ service cloud.firestore {
       allow read, write: if request.auth != null && request.auth.uid == userId;
     }
 
-    // ✅ Projects - accessible only to logged-in users
-    match /projects/{projectId} {
-      allow read, write: if request.auth != null;
-    }
-
     // ✅ Proposals - freelancer creates/updates; client (project owner) accepts
     match /proposals/{proposalId} {
       allow read: if request.auth != null;
 
-      // Freelancer can create their own proposal
-      allow create: if request.auth != null &&
-        request.resource.data.freelancerId == request.auth.uid;
+      allow create: if request.auth != null
+        && request.resource.data.freelancerId == request.auth.uid
+        && request.resource.data.projectId is string;
 
-      // Freelancer can update their own proposal
-      allow update: if request.auth != null &&
-        resource.data.freelancerId == request.auth.uid;
-
-      // ✅ Client can accept proposal if they own the related project
-      allow update: if request.auth != null &&
-        resource.data.projectId != null &&
-        get(/databases/$(database)/documents/projects/$(resource.data.projectId)).data.clientId == request.auth.uid;
+      allow update: if request.auth != null
+        // "Freelancer edits their own proposal" OR "Client editing a proposal on a project they own"
+        && (
+             resource.data.freelancerId == request.auth.uid
+             ||
+             (
+               resource.data.projectId != null
+               && get(
+                    /databases/$(database)/documents/projects/$(resource.data.projectId)
+                  ).data.clientId == request.auth.uid
+             )
+           );
     }
 
     // ✅ Freelancer Skills - public read, auth write
@@ -52,29 +104,44 @@ service cloud.firestore {
       allow write: if request.auth != null;
     }
 
-    // ✅ Notifications - user-specific access
-    match /notifications/{notificationId} {
-      allow read: if request.auth != null &&
-        request.auth.uid == resource.data.userId;
-
-      allow write: if request.auth != null &&
-        request.auth.uid == request.resource.data.userId;
-    }
-
-    // ✅ Accepted Proposals - improved rules for better access
+    // ✅ Accepted Proposals - UPDATED: allow both clients and freelancers to read/update
     match /accepted_proposals/{docId} {
       // Allow client to create an accepted proposal
-      allow create: if request.auth != null &&
-        request.resource.data.clientId == request.auth.uid;
+      allow create: if request.auth != null
+        && request.resource.data.clientId == request.auth.uid;
 
-      // Allow freelancer to read their proposals
-      allow read: if request.auth != null &&
-        (request.query.limit <= 50) &&
-        (request.query.freelancerId == request.auth.uid);
+      // Allow both freelancer and client to read
+      allow read: if request.auth != null
+        && (
+             resource.data.clientId     == request.auth.uid
+             || resource.data.freelancerId == request.auth.uid
+           );
 
-      // Allow freelancer to read specific proposal
-      allow get: if request.auth != null &&
-        resource.data.freelancerId == request.auth.uid;
+      // Allow both freelancer and client to update (for status changes, delivery, etc.)
+      allow update: if request.auth != null
+        && (
+             resource.data.clientId     == request.auth.uid
+             || resource.data.freelancerId == request.auth.uid
+           );
+    }
+
+    // ✅ NEW: Project Timeline/Updates - allow project participants
+    match /project_updates/{updateId} {
+      allow read: if request.auth != null;
+      
+      allow create: if request.auth != null;
+      
+      allow update: if request.auth != null;
+    }
+
+    // ✅ NEW: Conversations - allow participants
+    match /conversations/{conversationId} {
+      allow read, write: if request.auth != null;
+    }
+
+    // Allow all authenticated access for other paths
+    match /{document=**} {
+      allow read, write: if isAuthenticated();
     }
   }
 } 

@@ -2,16 +2,27 @@ import { motion } from "framer-motion";
 import Link from "next/link";
 import Image from "next/image";
 import { FaStar, FaRegStar, FaStarHalfAlt, FaDollarSign } from "react-icons/fa";
+import MessageFreelancerButton from "./MessageFreelancerButton";
 
 export default function FreelancerCard({ freelancer }) {
-  const { id, name, university, skills, rating, profileImage, title, hourlyRate, experienceLevel } = freelancer;
+  const {
+    id,
+    name,
+    university,
+    skills,
+    rating,
+    reviewCount,
+    profileImage,
+    title,
+    hourlyRate,
+    isAvailable,
+  } = freelancer;
 
-  // Render star rating
   const renderStars = (rating) => {
     const stars = [];
     const fullStars = Math.floor(rating);
     const hasHalfStar = rating % 1 >= 0.5;
-    
+
     for (let i = 0; i < 5; i++) {
       if (i < fullStars) {
         stars.push(<FaStar key={i} className="text-yellow-400" />);
@@ -21,19 +32,44 @@ export default function FreelancerCard({ freelancer }) {
         stars.push(<FaRegStar key={i} className="text-yellow-400" />);
       }
     }
-    
+
     return stars;
   };
 
   return (
     <motion.div
-      whileHover={{ y: -5, boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)" }}
+      whileHover={{
+        y: -5,
+        boxShadow:
+          "0 10px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.1)",
+      }}
       transition={{ type: "spring", stiffness: 300, damping: 20 }}
-      className="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden border border-gray-200 dark:border-gray-700"
+      className="relative bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-500 text-white rounded-xl shadow-md overflow-hidden border border-white/10"
     >
-      <div className="p-6">
+      {/* Semi-transparent overlay for better text readability */}
+      <div className="absolute inset-0 bg-black/20 rounded-xl"></div>
+      
+      <div className="relative z-10 p-6">
+        {/* Availability Status Badge */}
+        <div className="absolute top-4 right-4">
+          <div
+            className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold ${
+              isAvailable !== false
+                ? "bg-green-500 text-white"
+                : "bg-red-500 text-white"
+            }`}
+          >
+            <span
+              className={`w-2 h-2 rounded-full mr-1 ${
+                isAvailable !== false ? "bg-green-200" : "bg-red-200"
+              }`}
+            ></span>
+            {isAvailable !== false ? "Available" : "Unavailable"}
+          </div>
+        </div>
+
         <div className="flex items-center space-x-4">
-          <div className="relative h-16 w-16 rounded-full overflow-hidden border-2 border-indigo-500">
+          <div className="relative h-16 w-16 rounded-full overflow-hidden border-2 border-white shadow-lg">
             <Image
               src={profileImage}
               alt={name}
@@ -43,58 +79,71 @@ export default function FreelancerCard({ freelancer }) {
             />
           </div>
           <div>
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{name}</h3>
-            {title && <p className="text-sm text-indigo-600 dark:text-indigo-400 font-medium">{title}</p>}
-            <p className="text-sm text-gray-500 dark:text-gray-400">{university}</p>
+            <h3 className="text-lg font-bold text-white drop-shadow-md">{name}</h3>
+            {title && (
+              <p className="text-sm text-yellow-300 font-semibold drop-shadow-sm">{title}</p>
+            )}
+            <p className="text-sm text-white font-medium drop-shadow-sm">{university}</p>
             <div className="flex items-center mt-1">
               {renderStars(rating)}
-              <span className="ml-1 text-sm text-gray-600 dark:text-gray-300">{rating}</span>
+              <span className="ml-1 text-sm text-white font-medium drop-shadow-sm">
+                {rating > 0 ? rating : 'No rating'}
+              </span>
+              {reviewCount > 0 && (
+                <span className="ml-1 text-xs text-white/80 drop-shadow-sm">
+                  ({reviewCount} review{reviewCount !== 1 ? 's' : ''})
+                </span>
+              )}
             </div>
           </div>
         </div>
-        
+
         {hourlyRate && (
           <div className="mt-4 flex items-center">
-            <FaDollarSign className="text-green-600 dark:text-green-400" />
-            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">${hourlyRate}/hour</span>
-            {experienceLevel && (
-              <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200">
-                {experienceLevel}
-              </span>
-            )}
+            <FaDollarSign className="text-green-300 drop-shadow-sm" />
+            <span className="text-sm font-semibold ml-1 text-white drop-shadow-sm">
+              ${hourlyRate}/hour
+            </span>
           </div>
         )}
-        
+
         <div className="mt-4">
-          <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Skills</h4>
+          <h4 className="text-sm font-bold text-white mb-2 drop-shadow-sm">Skills</h4>
           <div className="flex flex-wrap gap-2">
             {skills && skills.length > 0 ? (
               skills.slice(0, 3).map((skill, index) => (
                 <span
                   key={index}
-                  className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 dark:bg-indigo-900 text-indigo-800 dark:text-indigo-200"
+                  className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-white/30 text-white border border-white/20"
                 >
                   {skill}
                 </span>
               ))
             ) : (
-              <span className="text-xs text-gray-500">No skills listed</span>
+              <span className="text-xs text-white font-medium drop-shadow-sm">No skills listed</span>
             )}
             {skills && skills.length > 3 && (
-              <span className="text-xs text-gray-500">+{skills.length - 3} more</span>
+              <span className="text-xs text-white font-medium drop-shadow-sm">
+                +{skills.length - 3} more
+              </span>
             )}
           </div>
         </div>
-        
-        <div className="mt-6">
-          <Link 
+
+        <div className="mt-6 space-y-2">
+          <Link
             href={`/freelancers/${id}`}
-            className="w-full flex justify-center items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
+            className="w-full flex justify-center items-center px-4 py-2.5 border border-transparent rounded-lg shadow-lg text-sm font-semibold text-indigo-700 bg-white hover:bg-indigo-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white transition-all duration-200"
           >
             View Profile
           </Link>
+          <MessageFreelancerButton 
+            freelancerId={id}
+            freelancerName={name}
+            className="w-full flex justify-center items-center px-4 py-2.5 border border-white/30 rounded-lg shadow-lg text-sm font-semibold text-white bg-white/20 hover:bg-white/30 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white transition-all duration-200"
+          />
         </div>
       </div>
     </motion.div>
   );
-} 
+}

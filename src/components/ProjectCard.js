@@ -48,83 +48,94 @@ export default function ProjectCard({ project }) {
     }
   };
   
-  // Determine status color
+  // Determine status color for gradient background
   const getStatusColor = (status) => {
     switch(status?.toLowerCase()) {
       case 'open':
-        return 'bg-green-100 text-green-800';
+        return 'bg-green-400/30 text-green-100 border-green-300/30';
       case 'in-progress':
-        return 'bg-blue-100 text-blue-800';
+        return 'bg-blue-400/30 text-blue-100 border-blue-300/30';
       case 'completed':
-        return 'bg-gray-100 text-gray-800';
+        return 'bg-gray-400/30 text-gray-100 border-gray-300/30';
       case 'closed':
-        return 'bg-red-100 text-red-800';
+        return 'bg-red-400/30 text-red-100 border-red-300/30';
       default:
-        return 'bg-green-100 text-green-800';
+        return 'bg-green-400/30 text-green-100 border-green-300/30';
     }
   };
 
   return (
     <motion.div
-      whileHover={{ y: -5, boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)" }}
+      whileHover={{
+        y: -5,
+        boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.1)"
+      }}
       transition={{ type: "spring", stiffness: 300, damping: 20 }}
-      className="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden border border-gray-200 dark:border-gray-700 h-full flex flex-col"
+      className="relative bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-500 text-white rounded-xl shadow-md overflow-hidden border border-white/10 h-full flex flex-col"
     >
-      <div className="p-6 flex flex-col h-full">
+      {/* Semi-transparent overlay for better text readability */}
+      <div className="absolute inset-0 bg-black/20 rounded-xl"></div>
+      
+      <div className="relative z-10 p-6 flex flex-col h-full">
         <div className="flex justify-between items-start mb-2">
-          <h3 className="text-xl font-semibold text-gray-900 dark:text-white">{title}</h3>
+          <h3 className="text-xl font-bold text-white drop-shadow-md">{title}</h3>
           {status && (
-            <span className={`ml-2 px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(status)}`}>
+            <span className={`ml-2 px-3 py-1 text-xs font-semibold rounded-full backdrop-blur-sm border ${getStatusColor(status)}`}>
               {status}
             </span>
           )}
         </div>
         
-        <p className="text-gray-600 dark:text-gray-300 mb-4 flex-grow line-clamp-3">{description}</p>
+        <p className="text-white/95 mb-4 flex-grow line-clamp-3 font-medium drop-shadow-sm">{description}</p>
         
         <div className="mb-4">
-          <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Required Skills</h4>
+          <h4 className="text-sm font-bold text-white mb-2 drop-shadow-sm">Required Skills</h4>
           <div className="flex flex-wrap gap-2">
-            {skills && skills.length > 0 ? skills.map((skill, index) => (
+            {skills && skills.length > 0 ? skills.slice(0, 4).map((skill, index) => (
               <span
                 key={index}
-                className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200"
+                className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-white/30 text-white border border-white/20"
               >
                 {skill}
               </span>
             )) : (
-              <span className="text-xs text-gray-500">No skills specified</span>
+              <span className="text-xs text-white font-medium drop-shadow-sm">No skills specified</span>
+            )}
+            {skills && skills.length > 4 && (
+              <span className="text-xs text-white font-medium drop-shadow-sm">
+                +{skills.length - 4} more
+              </span>
             )}
           </div>
         </div>
         
-        <div className="mt-auto space-y-3 pt-4 border-t border-gray-200 dark:border-gray-700">
-          <div className="flex items-center text-gray-600 dark:text-gray-300">
-            <FiUser className="mr-2 text-indigo-500" />
-            <span className="text-sm">{clientName || "Anonymous Client"}</span>
+        <div className="mt-auto space-y-3 pt-4 border-t border-white/20">
+          <div className="flex items-center text-white">
+            <FiUser className="mr-2 text-yellow-300 drop-shadow-sm" />
+            <span className="text-sm font-medium drop-shadow-sm">{clientName || "Anonymous Client"}</span>
           </div>
           
           <div className="flex items-center justify-between">
-            <div className="flex items-center text-gray-600 dark:text-gray-300">
-              <FiDollarSign className="mr-1 text-indigo-500" />
-              <span className="font-medium">{budget}</span>
+            <div className="flex items-center text-white">
+              <FiDollarSign className="mr-1 text-green-300 drop-shadow-sm" />
+              <span className="font-semibold drop-shadow-sm">{budget}</span>
             </div>
-            <div className="flex items-center text-gray-600 dark:text-gray-300">
-              <FiCalendar className="mr-1 text-indigo-500" />
-              <span className="text-sm">{formatDate(deadline)}</span>
+            <div className="flex items-center text-white">
+              <FiCalendar className="mr-1 text-blue-300 drop-shadow-sm" />
+              <span className="text-sm font-medium drop-shadow-sm">{formatDate(deadline)}</span>
             </div>
           </div>
           
-          <div className="flex items-center text-gray-500 text-xs">
-            <FiTag className="mr-1" />
-            <span>Posted: {formatPostedDate(createdAt)}</span>
+          <div className="flex items-center text-white/90 text-xs">
+            <FiTag className="mr-1 drop-shadow-sm" />
+            <span className="font-medium drop-shadow-sm">Posted: {formatPostedDate(createdAt)}</span>
           </div>
         </div>
         
         <div className="mt-6">
           <Link 
             href={`/projects/${id}`}
-            className="w-full flex justify-center items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
+            className="w-full flex justify-center items-center px-4 py-2.5 border border-transparent rounded-lg shadow-lg text-sm font-semibold text-indigo-700 bg-white hover:bg-indigo-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white transition-all duration-200"
           >
             View Details
           </Link>

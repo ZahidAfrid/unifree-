@@ -86,7 +86,7 @@ const Navbar = () => {
           Explore
         </Link>
         {user && (
-          <Link href="/messaging" className="text-lg hover:text-gray-300 transition duration-200">
+          <Link href="/messages" className="text-lg hover:text-gray-300 transition duration-200">
             Messages
           </Link>
         )}
@@ -115,7 +115,7 @@ const Navbar = () => {
                   <Link href="/dashboard" className="block px-4 py-2 hover:bg-gray-200 transition duration-200">
                     Dashboard
                   </Link>
-                  <Link href="/messaging" className="block px-4 py-2 hover:bg-gray-200 transition duration-200">
+                  <Link href="/messages" className="block px-4 py-2 hover:bg-gray-200 transition duration-200">
                     Messages
                   </Link>
                   <Link href="/settings" className="block px-4 py-2 hover:bg-gray-200 transition duration-200">
@@ -174,7 +174,7 @@ const Navbar = () => {
               Explore
             </Link>
             {user && (
-              <Link href="/messaging" className="text-lg hover:text-gray-300 transition duration-200">
+              <Link href="/messages" className="text-lg hover:text-gray-300 transition duration-200">
                 Messages
               </Link>
             )}
@@ -198,7 +198,7 @@ const Navbar = () => {
                     <Link href="/dashboard" className="block px-4 py-2 hover:bg-gray-200">
                       Dashboard
                     </Link>
-                    <Link href="/messaging" className="block px-4 py-2 hover:bg-gray-200">
+                    <Link href="/messages" className="block px-4 py-2 hover:bg-gray-200">
                       Messages
                     </Link>
                     <Link href="/settings" className="block px-4 py-2 hover:bg-gray-200">

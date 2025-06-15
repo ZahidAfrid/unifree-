@@ -215,7 +215,8 @@ export default function ProjectDetails() {
         freelancerName,
         project.id,
         project.title,
-        user.uid
+        user.uid,
+        proposalRef.id
       );
 
       toast.success("Proposal submitted successfully");

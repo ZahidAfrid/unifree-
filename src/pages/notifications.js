@@ -30,6 +30,9 @@ export default function NotificationsPage() {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("all"); // all, unread, read
 
+
+
+  
   useEffect(() => {
     if (user) {
       fetchNotifications();
