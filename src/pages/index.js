@@ -175,10 +175,10 @@ export default function Home() {
         "Benefit from innovative ideas and creative solutions from young talent.",
     },
     {
-      icon: <FaHandshake className="w-6 h-6" />,
-      title: "Secure Payments",
+      icon: <FiBriefcase className="w-6 h-6" />,
+      title: "Gigs + Bids",
       description:
-        "Our platform ensures safe and secure transactions for all parties.",
+        "Browse available gigs or submit competitive bids on projects that match your skills and interests.",
     },
     {
       icon: <FaChartLine className="w-6 h-6" />,

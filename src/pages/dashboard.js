@@ -1518,13 +1518,6 @@ export default function Dashboard() {
                                   </div>
                                 </div>
                                 <div className="flex items-center space-x-2">
-                                  <button
-                                    onClick={() => router.push("/messages")}
-                                    className="inline-flex items-center px-3 py-2 border border-transparent text-sm font-semibold rounded-lg text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 transition-all duration-200 shadow-md"
-                                  >
-                                    <FaEnvelope className="mr-2" />
-                                    Message Client
-                                  </button>
                                   {proposal.status === "accepted" && (
                                     <button
                                       onClick={() => handleMarkAsDelivered(proposal.id, proposal.projectId)}

@@ -397,7 +397,7 @@ export default function ProjectDetails() {
 
                   {!isOwner && (
                     <div className="mt-4 md:mt-0 flex flex-col sm:flex-row gap-3">
-                      {user ? (
+                      {user && user.userType === 'client' ? (
                         <Link
                           href={`/messages?recipient=${project.clientId}`}
                           className="inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
@@ -405,7 +405,7 @@ export default function ProjectDetails() {
                           <FiMessageSquare className="mr-2" />
                           Message Client
                         </Link>
-                      ) : (
+                      ) : !user ? (
                         <Link
                           href={`/login?redirect=/projects/${id}`}
                           className="inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
@@ -413,7 +413,7 @@ export default function ProjectDetails() {
                           <FiUser className="mr-2" />
                           Login to Contact Client
                         </Link>
-                      )}
+                      ) : null}
                       {user && canSubmitProposal && (
                         <button
                           onClick={() =>

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useAuth } from '@/contexts/AuthContext';
@@ -9,7 +9,9 @@ export default function Navigation() {
   const [userProfile, setUserProfile] = useState(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isClientComplete, setIsClientComplete] = useState(false);
+  const [is2FAEnabled, setIs2FAEnabled] = useState(false);
   const router = useRouter();
+  const dropdownRef = useRef(null);
 
   useEffect(() => {
     if (user) {
@@ -17,11 +19,30 @@ export default function Navigation() {
       if (user.userType === 'client') {
         checkClientRegistration();
       }
+      check2FAStatus();
     } else {
       setUserProfile(null);
       setIsClientComplete(false);
+      setIs2FAEnabled(false);
     }
   }, [user]);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsMenuOpen(false);
+      }
+    }
+
+    if (isMenuOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isMenuOpen]);
 
   const fetchUserProfile = async () => {
     const profile = await getCurrentUserProfile();
@@ -33,9 +54,17 @@ export default function Navigation() {
     setIsClientComplete(completed);
   };
 
+
+
   const handleSignOut = async () => {
+    setIsMenuOpen(false); // Close dropdown
     await signOut();
     router.push('/');
+  };
+
+  // Close dropdown when clicking on links
+  const handleLinkClick = () => {
+    setIsMenuOpen(false);
   };
 
   return (
@@ -115,7 +144,7 @@ export default function Navigation() {
           </div>
           <div className="hidden sm:ml-6 sm:flex sm:items-center">
             {user ? (
-              <div className="ml-3 relative">
+              <div className="ml-3 relative" ref={dropdownRef}>
                 <div>
                   <button
                     onClick={() => setIsMenuOpen(!isMenuOpen)}
@@ -127,10 +156,29 @@ export default function Navigation() {
                   </button>
                 </div>
                 {isMenuOpen && (
-                  <div className="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 focus:outline-none">
+                  <div className="origin-top-right absolute right-0 mt-2 w-64 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 focus:outline-none">
+                    {/* User Info Section */}
+                    <div className="px-4 py-3 border-b border-gray-100">
+                      <div className="flex items-center">
+                        <div className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center text-white mr-3">
+                          {userProfile?.full_name ? userProfile.full_name.charAt(0).toUpperCase() : user.email.charAt(0).toUpperCase()}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-gray-900 truncate">
+                            {userProfile?.full_name || 'User'}
+                          </p>
+                          <p className="text-sm text-gray-500 truncate">
+                            {user.email}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {/* Menu Items */}
                     {user.userType === 'client' && isClientComplete ? (
                       <Link 
                         href="/client-dashboard" 
+                        onClick={handleLinkClick}
                         className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
                       >
                         Client Dashboard
@@ -138,6 +186,7 @@ export default function Navigation() {
                     ) : (
                       <Link 
                         href="/dashboard" 
+                        onClick={handleLinkClick}
                         className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
                       >
                         Dashboard
@@ -147,6 +196,7 @@ export default function Navigation() {
                     {user.userType === 'client' && !isClientComplete && (
                       <Link 
                         href="/client-registration" 
+                        onClick={handleLinkClick}
                         className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
                       >
                         Register as Client
@@ -154,14 +204,35 @@ export default function Navigation() {
                     )}
                     
                     <Link 
+                      href="/messages"
+                      onClick={handleLinkClick}
+                      className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+                    >
+                      Messages
+                    </Link>
+                    
+                    <Link 
+                      href="/settings"
+                      onClick={handleLinkClick}
+                      className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+                    >
+                      Settings
+                    </Link>
+                    
+
+                    
+                    <Link 
                       href="/freelancer/profile" 
+                      onClick={handleLinkClick}
                       className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
                     >
                       My Profile
                     </Link>
+                    
+                    <div className="border-t border-gray-100"></div>
                     <button
                       onClick={handleSignOut}
-                      className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50"
                     >
                       Sign out
                     </button>

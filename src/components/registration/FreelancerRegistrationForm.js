@@ -94,10 +94,10 @@ export default function FreelancerRegistrationForm() {
       toast.success("Your freelancer profile has been created!");
       
       console.log("🔄 Redirecting to dashboard...");
-      // Add a small delay to ensure the database updates are complete
+      // Force a page reload to ensure user context is properly updated
       setTimeout(() => {
-        router.push("/dashboard");
-      }, 1000);
+        window.location.href = "/dashboard";
+      }, 1500);
     } catch (error) {
       console.error("❌ Error creating freelancer profile:", error);
       console.error("Error details:", {

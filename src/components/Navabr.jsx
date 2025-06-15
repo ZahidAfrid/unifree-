@@ -11,12 +11,15 @@ const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isClient, setIsClient] = useState(false);
+  
   const { user, signOut } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
     setIsClient(true);
   }, []);
+
+
 
   useEffect(() => {
     const lenis = new Lenis({
@@ -39,8 +42,14 @@ const Navbar = () => {
   }, []);
 
   const handleSignOut = async () => {
+    setIsDropdownOpen(false); // Close dropdown
     await signOut();
     router.push("/");
+  };
+
+  // Close dropdown when clicking on links
+  const handleLinkClick = () => {
+    setIsDropdownOpen(false);
   };
 
   const getUserInitials = () => {
@@ -106,21 +115,43 @@ const Navbar = () => {
             <AnimatePresence>
               {isDropdownOpen && (
                 <motion.div
-                  className="absolute right-0 mt-2 w-48 bg-white text-gray-900 rounded-lg shadow-lg overflow-hidden"
+                  className="absolute right-0 mt-2 w-64 bg-white text-gray-900 rounded-lg shadow-lg overflow-hidden"
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}
                   transition={{ duration: 0.3 }}
                 >
-                  <Link href="/dashboard" className="block px-4 py-2 hover:bg-gray-200 transition duration-200">
+                  {/* User Info Section */}
+                  <div className="px-4 py-3 border-b border-gray-100">
+                    <div className="flex items-center">
+                      <div className="w-10 h-10 rounded-full bg-yellow-400 text-gray-900 font-bold flex items-center justify-center mr-3">
+                        {getUserInitials()}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-gray-900 truncate">
+                          {user?.user_metadata?.full_name || 'User'}
+                        </p>
+                        <p className="text-sm text-gray-500 truncate">
+                          {user?.email}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Menu Items */}
+                  <Link href="/dashboard" onClick={handleLinkClick} className="block px-4 py-2 hover:bg-gray-200 transition duration-200">
                     Dashboard
                   </Link>
-                  <Link href="/messages" className="block px-4 py-2 hover:bg-gray-200 transition duration-200">
+                  <Link href="/messages" onClick={handleLinkClick} className="block px-4 py-2 hover:bg-gray-200 transition duration-200">
                     Messages
                   </Link>
-                  <Link href="/settings" className="block px-4 py-2 hover:bg-gray-200 transition duration-200">
+                  <Link href="/settings" onClick={handleLinkClick} className="block px-4 py-2 hover:bg-gray-200 transition duration-200">
                     Settings
                   </Link>
+                  
+
+                  
+                  <div className="border-t border-gray-100"></div>
                   <button
                     onClick={handleSignOut}
                     className="block w-full text-left px-4 py-2 text-red-500 hover:bg-red-100 transition duration-200"
@@ -189,21 +220,43 @@ const Navbar = () => {
 
                 {isDropdownOpen && (
                   <motion.div
-                    className="mt-2 w-48 bg-white text-gray-900 rounded-lg shadow-lg overflow-hidden"
+                    className="mt-2 w-64 bg-white text-gray-900 rounded-lg shadow-lg overflow-hidden"
                     initial={{ opacity: 0, y: -10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
                     transition={{ duration: 0.3 }}
                   >
-                    <Link href="/dashboard" className="block px-4 py-2 hover:bg-gray-200">
+                    {/* User Info Section */}
+                    <div className="px-4 py-3 border-b border-gray-100">
+                      <div className="flex items-center">
+                        <div className="w-10 h-10 rounded-full bg-yellow-400 text-gray-900 font-bold flex items-center justify-center mr-3">
+                          {getUserInitials()}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-gray-900 truncate">
+                            {user?.user_metadata?.full_name || 'User'}
+                          </p>
+                          <p className="text-sm text-gray-500 truncate">
+                            {user?.email}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Menu Items */}
+                    <Link href="/dashboard" onClick={handleLinkClick} className="block px-4 py-2 hover:bg-gray-200">
                       Dashboard
                     </Link>
-                    <Link href="/messages" className="block px-4 py-2 hover:bg-gray-200">
+                    <Link href="/messages" onClick={handleLinkClick} className="block px-4 py-2 hover:bg-gray-200">
                       Messages
                     </Link>
-                    <Link href="/settings" className="block px-4 py-2 hover:bg-gray-200">
+                    <Link href="/settings" onClick={handleLinkClick} className="block px-4 py-2 hover:bg-gray-200">
                       Settings
                     </Link>
+                    
+
+                    
+                    <div className="border-t border-gray-100"></div>
                     <button onClick={handleSignOut} className="block w-full text-left px-4 py-2 text-red-500 hover:bg-red-100">
                       Sign Out
                     </button>

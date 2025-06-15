@@ -2,7 +2,6 @@ import { motion } from "framer-motion";
 import Link from "next/link";
 import Image from "next/image";
 import { FaStar, FaRegStar, FaStarHalfAlt, FaDollarSign } from "react-icons/fa";
-import MessageFreelancerButton from "./MessageFreelancerButton";
 
 export default function FreelancerCard({ freelancer }) {
   const {
@@ -130,18 +129,13 @@ export default function FreelancerCard({ freelancer }) {
           </div>
         </div>
 
-        <div className="mt-6 space-y-2">
+        <div className="mt-6">
           <Link
             href={`/freelancers/${id}`}
             className="w-full flex justify-center items-center px-4 py-2.5 border border-transparent rounded-lg shadow-lg text-sm font-semibold text-indigo-700 bg-white hover:bg-indigo-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white transition-all duration-200"
           >
             View Profile
           </Link>
-          <MessageFreelancerButton 
-            freelancerId={id}
-            freelancerName={name}
-            className="w-full flex justify-center items-center px-4 py-2.5 border border-white/30 rounded-lg shadow-lg text-sm font-semibold text-white bg-white/20 hover:bg-white/30 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white transition-all duration-200"
-          />
         </div>
       </div>
     </motion.div>

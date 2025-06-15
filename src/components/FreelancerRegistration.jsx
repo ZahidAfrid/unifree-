@@ -324,7 +324,10 @@ export default function FreelancerRegistration() {
       await Promise.all(skillPromises);
 
       toast.success("Freelancer profile created successfully!");
-      router.push(`/freelancer/${formData.username}`);
+      // Force a page reload to ensure user context is properly updated
+      setTimeout(() => {
+        window.location.href = "/dashboard";
+      }, 1500);
     } catch (error) {
       console.error("Error creating profile:", error);
       toast.error(error.message || "Failed to create freelancer profile");

@@ -95,7 +95,7 @@ export default function MessageFreelancerButton({ freelancerId, freelancerName, 
                     value={message}
                     onChange={(e) => setMessage(e.target.value)}
                     rows={4}
-                    className="block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                    className="block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm text-gray-900 placeholder-gray-500"
                     placeholder={projectTitle 
                       ? `Hi ${freelancerName?.split(' ')[0] || 'there'}, I'm interested in discussing the "${projectTitle}" project with you...`
                       : `Hi ${freelancerName?.split(' ')[0] || 'there'}, I'd like to discuss a potential project with you...`
