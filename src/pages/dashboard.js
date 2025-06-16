@@ -1137,13 +1137,13 @@ export default function Dashboard() {
 
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 pb-12">
         {/* Header */}
-        <div className="relative overflow-hidden pt-32 pb-12">
+        <div className="relative overflow-hidden pt-20 pb-8 md:pt-32 md:pb-12">
           <div className="absolute inset-0 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-500"></div>
           <div className="absolute inset-0 bg-black/20"></div>
-          <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex flex-col md:flex-row items-center justify-between">
-              <div className="flex items-center space-x-4">
-                <div className="h-20 w-20 rounded-full bg-white p-1 shadow-lg">
+          <div className="relative z-10 max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
+            <div className="flex flex-col items-center text-center md:flex-row md:items-center md:justify-between md:text-left">
+              <div className="flex flex-col items-center md:flex-row md:items-center md:space-x-4">
+                <div className="h-16 w-16 md:h-20 md:w-20 rounded-full bg-white p-1 shadow-lg mb-3 md:mb-0">
                   <img
                     src={profileData?.profileImage || "/default-avatar.png"}
                     alt="Profile"
@@ -1151,90 +1151,98 @@ export default function Dashboard() {
                   />
                 </div>
                 <div>
-                  <h1 className="text-2xl font-bold text-white drop-shadow-md">
+                  <h1 className="text-xl md:text-2xl font-bold text-white drop-shadow-md mb-1">
                     {profileData?.fullName || "Your Name"}
                   </h1>
-                  <p className="text-white/90 font-medium drop-shadow-sm">
+                  <p className="text-sm md:text-base text-white/90 font-medium drop-shadow-sm">
                     {profileData?.professionalTitle || "Professional Title"}
                   </p>
                 </div>
               </div>
-              <div className="mt-4 md:mt-0 flex space-x-4">
-                <NotificationCenter userType="freelancer" />
-                <button
-                  onClick={handleEditProfile}
-                  className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-semibold rounded-lg text-indigo-700 bg-white hover:bg-indigo-50 shadow-lg transition-all duration-200"
-                >
-                  <FaEdit className="mr-2" />
-                  Edit Profile
-                </button>
-                <button
-                  onClick={() => router.push("/messages")}
-                  className="inline-flex items-center px-4 py-2 border border-white/20 text-sm font-semibold rounded-lg text-white bg-white/20 hover:bg-white/30 backdrop-blur-sm transition-all duration-200"
-                >
-                  <FaEnvelope className="mr-2" />
-                  Messages
-                </button>
-                <button
-                  onClick={() => router.push("/explore")}
-                  className="inline-flex items-center px-4 py-2 border border-white/20 text-sm font-semibold rounded-lg text-white bg-white/20 hover:bg-white/30 backdrop-blur-sm transition-all duration-200"
-                >
-                  <FaSearch className="mr-2" />
-                  Find Projects
-                </button>
-                <button
-                  onClick={handleManualRefresh}
-                  className="inline-flex items-center px-4 py-2 border border-white/20 text-sm font-semibold rounded-lg text-white bg-white/20 hover:bg-white/30 backdrop-blur-sm transition-all duration-200"
-                  disabled={loading}
-                >
-                  <FaRegClock className="mr-2" />
-                  {loading ? "Refreshing..." : "Debug Refresh"}
-                </button>
+              <div className="mt-6 md:mt-0 w-full md:w-auto">
+                <div className="flex justify-center md:justify-end mb-3 md:mb-0">
+                  <NotificationCenter userType="freelancer" />
+                </div>
+                <div className="grid grid-cols-4 gap-2 max-w-xs sm:max-w-sm md:max-w-none mx-auto">
+                  <button
+                    onClick={handleEditProfile}
+                    className="inline-flex items-center justify-center px-2 sm:px-3 md:px-4 py-2 sm:py-3 border border-transparent text-xs sm:text-sm font-semibold rounded-lg text-indigo-700 bg-white hover:bg-indigo-50 shadow-lg transition-all duration-200"
+                  >
+                    <FaEdit className="text-sm sm:mr-1 md:mr-2" />
+                    <span className="hidden sm:inline ml-1">Edit Profile</span>
+                    <span className="sm:hidden sr-only">Edit</span>
+                  </button>
+                  <button
+                    onClick={() => router.push("/messages")}
+                    className="inline-flex items-center justify-center px-2 sm:px-3 md:px-4 py-2 sm:py-3 border border-white/20 text-xs sm:text-sm font-semibold rounded-lg text-white bg-white/20 hover:bg-white/30 backdrop-blur-sm transition-all duration-200"
+                  >
+                    <FaEnvelope className="text-sm sm:mr-1 md:mr-2" />
+                    <span className="hidden sm:inline ml-1">Messages</span>
+                    <span className="sm:hidden sr-only">Msg</span>
+                  </button>
+                  <button
+                    onClick={() => router.push("/explore")}
+                    className="inline-flex items-center justify-center px-2 sm:px-3 md:px-4 py-2 sm:py-3 border border-white/20 text-xs sm:text-sm font-semibold rounded-lg text-white bg-white/20 hover:bg-white/30 backdrop-blur-sm transition-all duration-200"
+                  >
+                    <FaSearch className="text-sm sm:mr-1 md:mr-2" />
+                    <span className="hidden sm:inline ml-1">Find Projects</span>
+                    <span className="sm:hidden sr-only">Find</span>
+                  </button>
+                  <button
+                    onClick={handleManualRefresh}
+                    className="inline-flex items-center justify-center px-2 sm:px-3 md:px-4 py-2 sm:py-3 border border-white/20 text-xs sm:text-sm font-semibold rounded-lg text-white bg-white/20 hover:bg-white/30 backdrop-blur-sm transition-all duration-200"
+                    disabled={loading}
+                  >
+                    <FaRegClock className="text-sm sm:mr-1 md:mr-2" />
+                    <span className="hidden sm:inline ml-1">{loading ? "Refreshing..." : "Refresh"}</span>
+                    <span className="sm:hidden sr-only">{loading ? "..." : "Refresh"}</span>
+                  </button>
+                </div>
               </div>
             </div>
           </div>
         </div>
 
         {/* Main Content */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-8">
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 lg:gap-8">
             {/* Left Sidebar */}
-            <div className="lg:col-span-1">
+            <div className="lg:col-span-1 order-2 lg:order-1">
               <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-white/20">
-                <div className="p-6">
-                  <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center">
-                    <FiTrendingUp className="mr-2 text-indigo-600" />
+                <div className="p-4 sm:p-6">
+                  <h2 className="text-base sm:text-lg font-bold text-gray-900 mb-4 flex items-center">
+                    <FiTrendingUp className="mr-2 text-indigo-600 text-sm sm:text-base" />
                     Quick Stats
                   </h2>
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between p-3 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-lg">
-                      <span className="text-gray-700 font-medium">Active Projects</span>
-                      <span className="font-bold text-indigo-600 text-lg">
+                  <div className="grid grid-cols-2 lg:grid-cols-1 gap-3 lg:gap-4">
+                    <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between p-3 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-lg">
+                      <span className="text-xs sm:text-sm text-gray-700 font-medium mb-1 lg:mb-0">Active Projects</span>
+                      <span className="font-bold text-indigo-600 text-lg sm:text-xl">
                         {stats.activeProjects}
                       </span>
                     </div>
-                    <div className="flex items-center justify-between p-3 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg">
-                      <span className="text-gray-700 font-medium">Completed Projects</span>
-                      <span className="font-bold text-green-600 text-lg">
+                    <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between p-3 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg">
+                      <span className="text-xs sm:text-sm text-gray-700 font-medium mb-1 lg:mb-0">Completed</span>
+                      <span className="font-bold text-green-600 text-lg sm:text-xl">
                         {stats.completedProjects}
                       </span>
                     </div>
-                    <div className="flex items-center justify-between p-3 bg-gradient-to-r from-yellow-50 to-orange-50 rounded-lg">
-                      <span className="text-gray-700 font-medium">Total Earnings</span>
-                      <span className="font-bold text-orange-600 text-lg">
+                    <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between p-3 bg-gradient-to-r from-yellow-50 to-orange-50 rounded-lg">
+                      <span className="text-xs sm:text-sm text-gray-700 font-medium mb-1 lg:mb-0">Total Earnings</span>
+                      <span className="font-bold text-orange-600 text-base sm:text-lg">
                         ${stats.totalEarnings.toFixed(2)}
                       </span>
                     </div>
-                    <div className="flex items-center justify-between p-3 bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg">
-                      <span className="text-gray-700 font-medium">Pending Payments</span>
-                      <span className="font-bold text-purple-600 text-lg">
+                    <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between p-3 bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg">
+                      <span className="text-xs sm:text-sm text-gray-700 font-medium mb-1 lg:mb-0">Pending</span>
+                      <span className="font-bold text-purple-600 text-base sm:text-lg">
                         ${stats.pendingPayments.toFixed(2)}
                       </span>
                     </div>
-                    <div className="flex items-center justify-between p-3 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-lg">
-                      <span className="text-gray-700 font-medium">Client Rating</span>
-                      <span className="font-bold text-blue-600 text-lg flex items-center">
-                        <FaStar className="mr-1 text-yellow-400" />
+                    <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between p-3 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-lg col-span-2 lg:col-span-1">
+                      <span className="text-xs sm:text-sm text-gray-700 font-medium mb-1 lg:mb-0">Client Rating</span>
+                      <span className="font-bold text-blue-600 text-base sm:text-lg flex items-center">
+                        <FaStar className="mr-1 text-yellow-400 text-sm" />
                         {stats.averageRating.toFixed(1)}/5.0
                       </span>
                     </div>
@@ -1242,27 +1250,27 @@ export default function Dashboard() {
                 </div>
               </div>
 
-              <div className="mt-6 bg-white rounded-xl shadow-lg overflow-hidden border border-white/20">
-                <div className="p-6">
-                  <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center">
-                    <FiZap className="mr-2 text-green-600" />
+              <div className="mt-4 lg:mt-6 bg-white rounded-xl shadow-lg overflow-hidden border border-white/20">
+                <div className="p-4 sm:p-6">
+                  <h2 className="text-base sm:text-lg font-bold text-gray-900 mb-4 flex items-center">
+                    <FiZap className="mr-2 text-green-600 text-sm sm:text-base" />
                     Availability
                   </h2>
                   <div className="flex items-center justify-between">
-                    <span className="text-gray-700 font-medium">Status</span>
+                    <span className="text-sm sm:text-base text-gray-700 font-medium">Status</span>
                     <button
                       onClick={handleAvailabilityToggle}
                       className="flex items-center space-x-2 text-indigo-600 hover:text-indigo-700 transition-colors"
                     >
                       {availability ? (
                         <>
-                          <FaToggleOn className="text-2xl text-green-500" />
-                          <span className="font-semibold text-green-600">Available</span>
+                          <FaToggleOn className="text-xl sm:text-2xl text-green-500" />
+                          <span className="font-semibold text-green-600 text-sm sm:text-base">Available</span>
                         </>
                       ) : (
                         <>
-                          <FaToggleOff className="text-2xl text-gray-400" />
-                          <span className="font-semibold text-gray-500">Unavailable</span>
+                          <FaToggleOff className="text-xl sm:text-2xl text-gray-400" />
+                          <span className="font-semibold text-gray-500 text-sm sm:text-base">Unavailable</span>
                         </>
                       )}
                     </button>
@@ -1272,11 +1280,11 @@ export default function Dashboard() {
             </div>
 
             {/* Main Content Area */}
-            <div className="lg:col-span-3">
+            <div className="lg:col-span-3 order-1 lg:order-2">
               {/* Tabs */}
-              <div className="bg-white rounded-xl shadow-lg overflow-hidden mb-8 border border-white/20">
+              <div className="bg-white rounded-xl shadow-lg overflow-hidden mb-4 lg:mb-8 border border-white/20">
                 <div className="border-b border-gray-200">
-                  <nav className="flex -mb-px">
+                  <nav className="flex -mb-px overflow-x-auto scrollbar-hide px-1 sm:px-0">
                     {["overview", "projects", "proposals", "reviews", "history", "settings", "documents"].map(
                       (tab) => (
                         <button
@@ -1286,15 +1294,25 @@ export default function Dashboard() {
                             activeTab === tab
                               ? "border-indigo-500 text-indigo-600 bg-indigo-50"
                               : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 hover:bg-gray-50"
-                          } whitespace-nowrap py-4 px-6 border-b-2 font-semibold text-sm capitalize transition-all duration-200`}
+                          } whitespace-nowrap py-3 px-2 sm:px-4 md:px-6 border-b-2 font-semibold text-xs sm:text-sm capitalize transition-all duration-200 flex-shrink-0 min-w-0`}
                         >
                           {tab === "settings" ? (
-                            <span className="flex items-center">
-                              <FaCog className="mr-2" />
-                              {tab}
+                            <span className="flex items-center justify-center">
+                              <FaCog className="text-sm sm:mr-1 md:mr-2" />
+                              <span className="hidden sm:inline ml-1">{tab}</span>
                             </span>
                           ) : (
-                            tab
+                            <span className="text-center">
+                              <span className="sm:hidden text-xs">
+                                {tab === "overview" ? "Home" : 
+                                 tab === "projects" ? "Projects" :
+                                 tab === "proposals" ? "Proposals" :
+                                 tab === "reviews" ? "Reviews" :
+                                 tab === "history" ? "History" :
+                                 tab === "documents" ? "Docs" : tab}
+                              </span>
+                              <span className="hidden sm:inline">{tab}</span>
+                            </span>
                           )}
                         </button>
                       )
@@ -1305,22 +1323,22 @@ export default function Dashboard() {
 
               {/* Tab Content */}
               <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-white/20">
-                <div className="p-6">
+                <div className="p-4 sm:p-6">
                   {activeTab === "overview" && (
                     <div className="space-y-8">
                       {/* Modern Charts Grid */}
-                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                      <div className="grid grid-cols-1 gap-4 sm:gap-6">
                         {/* Earnings Trend Chart */}
                         <motion.div
                           initial={{ opacity: 0, y: 20 }}
                           animate={{ opacity: 1, y: 0 }}
-                          className="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-xl p-6 border border-indigo-100"
+                          className="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-xl p-4 sm:p-6 border border-indigo-100"
                         >
-                          <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center">
-                            <FiDollarSign className="mr-2 text-indigo-600" />
+                          <h3 className="text-base sm:text-lg font-bold text-gray-900 mb-3 sm:mb-4 flex items-center">
+                            <FiDollarSign className="mr-2 text-indigo-600 text-sm sm:text-base" />
                             Earnings Trend
                           </h3>
-                          <div className="h-64">
+                          <div className="h-48 sm:h-64">
                             <ResponsiveContainer width="100%" height="100%">
                               <AreaChart data={earningsData}>
                                 <defs>
@@ -1351,13 +1369,13 @@ export default function Dashboard() {
                           initial={{ opacity: 0, y: 20 }}
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ delay: 0.1 }}
-                          className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-6 border border-green-100"
+                          className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-4 sm:p-6 border border-green-100"
                         >
-                          <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center">
-                            <FaBriefcase className="mr-2 text-green-600" />
+                          <h3 className="text-base sm:text-lg font-bold text-gray-900 mb-3 sm:mb-4 flex items-center">
+                            <FaBriefcase className="mr-2 text-green-600 text-sm sm:text-base" />
                             Monthly Projects
                           </h3>
-                          <div className="h-64">
+                          <div className="h-48 sm:h-64">
                             <ResponsiveContainer width="100%" height="100%">
                               <BarChart data={earningsData}>
                                 <CartesianGrid strokeDasharray="3 3" stroke="#d1fae5" />
@@ -1381,7 +1399,7 @@ export default function Dashboard() {
                             <FaCode className="mr-2 text-orange-600" />
                             Skills Distribution
                           </h3>
-                          <div className="h-64">
+                          <div className="h-48 sm:h-64">
                             <ResponsiveContainer width="100%" height="100%">
                               <PieChart>
                                 <Pie
@@ -1413,7 +1431,7 @@ export default function Dashboard() {
                             <FaTrophy className="mr-2 text-purple-600" />
                             Performance Metrics
                           </h3>
-                          <div className="h-64">
+                          <div className="h-48 sm:h-64">
                             <ResponsiveContainer width="100%" height="100%">
                               <RadialBarChart cx="50%" cy="50%" innerRadius="20%" outerRadius="90%" data={performanceData}>
                                 <RadialBar dataKey="value" cornerRadius={10} fill="#8884d8" />
@@ -1468,17 +1486,17 @@ export default function Dashboard() {
                   )}
 
                   {activeTab === "projects" && (
-                    <div className="space-y-6">
-                      <div className="flex justify-between items-center">
-                        <h2 className="text-lg font-bold text-gray-900">
+                    <div className="space-y-4 sm:space-y-6">
+                      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center space-y-3 sm:space-y-0">
+                        <h2 className="text-lg sm:text-xl font-bold text-gray-900">
                           Active Projects
                         </h2>
-                        <div className="flex space-x-2">
+                        <div className="flex">
                           <button
                             onClick={() => router.push("/projects")}
-                            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-semibold rounded-lg text-white bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-500 hover:shadow-lg transition-all duration-200"
+                            className="inline-flex items-center justify-center px-3 sm:px-4 py-2 border border-transparent text-sm font-semibold rounded-lg text-white bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-500 hover:shadow-lg transition-all duration-200 w-full sm:w-auto"
                           >
-                            <FaSearch className="mr-2" />
+                            <FaSearch className="mr-2 text-sm" />
                             Find Projects
                           </button>
                         </div>
@@ -1517,30 +1535,33 @@ export default function Dashboard() {
                                     <span className="font-medium">{new Date(proposal.acceptedAt.toDate()).toLocaleDateString()}</span>
                                   </div>
                                 </div>
-                                <div className="flex items-center space-x-2">
+                                <div className="flex flex-col sm:flex-row items-stretch sm:items-center space-y-2 sm:space-y-0 sm:space-x-2">
                                   {proposal.status === "accepted" && (
                                     <button
                                       onClick={() => handleMarkAsDelivered(proposal.id, proposal.projectId)}
-                                      className="inline-flex items-center px-3 py-2 border border-transparent text-sm font-semibold rounded-lg text-white bg-green-600 hover:bg-green-700 transition-all duration-200 shadow-md"
+                                      className="inline-flex items-center justify-center px-3 py-2 border border-transparent text-xs sm:text-sm font-semibold rounded-lg text-white bg-green-600 hover:bg-green-700 transition-all duration-200 shadow-md w-full sm:w-auto"
                                     >
-                                      <FaCheckCircle className="mr-2" />
-                                      Mark as Delivered
+                                      <FaCheckCircle className="mr-1 sm:mr-2 text-xs sm:text-sm" />
+                                      <span className="hidden sm:inline">Mark as Delivered</span>
+                                      <span className="sm:hidden">Delivered</span>
                                     </button>
                                   )}
                                   {(proposal.status === "accepted" || proposal.status === "delivered") && (
                                     <button
                                       onClick={() => handleProjectHandover(proposal.id, proposal.projectId)}
-                                      className="inline-flex items-center px-3 py-2 border border-transparent text-sm font-semibold rounded-lg text-white bg-purple-600 hover:bg-purple-700 transition-all duration-200 shadow-md"
+                                      className="inline-flex items-center justify-center px-3 py-2 border border-transparent text-xs sm:text-sm font-semibold rounded-lg text-white bg-purple-600 hover:bg-purple-700 transition-all duration-200 shadow-md w-full sm:w-auto"
                                     >
-                                      <FaHandshake className="mr-2" />
-                                      Handover Project
+                                      <FaHandshake className="mr-1 sm:mr-2 text-xs sm:text-sm" />
+                                      <span className="hidden sm:inline">Handover Project</span>
+                                      <span className="sm:hidden">Handover</span>
                                     </button>
                                   )}
                                   <button
                                     onClick={() => router.push(`/projects/${proposal.projectId}`)}
-                                    className="text-indigo-600 hover:text-indigo-700 p-2 rounded-lg hover:bg-indigo-50 transition-all duration-200"
+                                    className="inline-flex items-center justify-center px-3 py-2 border border-transparent text-xs sm:text-sm font-medium rounded-lg text-indigo-600 bg-indigo-50 hover:bg-indigo-100 transition-all duration-200 w-full sm:w-auto"
                                   >
-                                    <FaEye className="w-5 h-5" />
+                                    <FaEye className="mr-1 sm:mr-2 text-xs sm:text-sm" />
+                                    View
                                   </button>
                                 </div>
                               </div>
@@ -1626,30 +1647,30 @@ export default function Dashboard() {
                   )}
 
                   {activeTab === "proposals" && (
-                    <div className="space-y-6">
-                      <h2 className="text-lg font-bold text-gray-900">
+                    <div className="space-y-4 sm:space-y-6">
+                      <h2 className="text-lg sm:text-xl font-bold text-gray-900">
                         Recent Proposals
                       </h2>
                       <div className="space-y-4">
                         {[1, 2, 3].map((proposal) => (
                           <div
                             key={proposal}
-                            className="border border-gray-200 rounded-xl p-6 hover:shadow-lg transition-all duration-200 bg-gradient-to-r from-white to-gray-50"
+                            className="border border-gray-200 rounded-xl p-4 sm:p-6 hover:shadow-lg transition-all duration-200 bg-gradient-to-r from-white to-gray-50"
                           >
-                            <div className="flex justify-between items-start">
-                              <div>
-                                <h3 className="text-lg font-semibold text-gray-900">
+                            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start space-y-3 sm:space-y-0">
+                              <div className="flex-1">
+                                <h3 className="text-base sm:text-lg font-semibold text-gray-900">
                                   Proposal for Project {proposal}
                                 </h3>
-                                <p className="text-sm text-gray-500 mt-1 font-medium">
+                                <p className="text-xs sm:text-sm text-gray-500 mt-1 font-medium">
                                   Submitted: Dec 15, 2023 • Budget: $500
                                 </p>
                               </div>
-                              <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold bg-yellow-100 text-yellow-800 border border-yellow-200">
+                              <span className="inline-flex items-center px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-semibold bg-yellow-100 text-yellow-800 border border-yellow-200 self-start">
                                 Pending
                               </span>
                             </div>
-                            <p className="mt-4 text-gray-600 font-medium">
+                            <p className="mt-3 sm:mt-4 text-xs sm:text-sm text-gray-600 font-medium">
                               Lorem ipsum dolor sit amet, consectetur adipiscing
                               elit. Sed do eiusmod tempor incididunt ut labore
                               et dolore magna aliqua.
@@ -1661,15 +1682,15 @@ export default function Dashboard() {
                   )}
 
                   {activeTab === "reviews" && (
-                    <div className="space-y-6">
-                      <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-100">
-                        <div className="flex justify-between items-center mb-6">
+                    <div className="space-y-4 sm:space-y-6">
+                      <div className="bg-white rounded-xl shadow-lg p-4 sm:p-6 border border-gray-100">
+                        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 sm:mb-6 space-y-3 sm:space-y-0">
                           <div>
-                            <h3 className="text-xl font-bold text-gray-900 flex items-center">
-                              <FaStar className="mr-2 text-yellow-400" />
+                            <h3 className="text-lg sm:text-xl font-bold text-gray-900 flex items-center">
+                              <FaStar className="mr-2 text-yellow-400 text-sm sm:text-base" />
                               Client Reviews
                             </h3>
-                            <p className="text-sm text-gray-500 mt-1">
+                            <p className="text-xs sm:text-sm text-gray-500 mt-1">
                               Reviews and ratings from your clients
                             </p>
                           </div>
@@ -1819,13 +1840,13 @@ export default function Dashboard() {
                   )}
 
                   {activeTab === "settings" && (
-                    <div className="space-y-6">
-                      <h2 className="text-lg font-bold text-gray-900 mb-4">
+                    <div className="space-y-4 sm:space-y-6">
+                      <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-4">
                         Account Settings
                       </h2>
-                      <div className="space-y-6">
-                        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6 border border-blue-100">
-                          <label className="block text-sm font-semibold text-gray-700 mb-3">
+                      <div className="space-y-4 sm:space-y-6">
+                        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-4 sm:p-6 border border-blue-100">
+                          <label className="block text-sm sm:text-base font-semibold text-gray-700 mb-3">
                             Email Notifications
                           </label>
                           <div className="mt-2">
@@ -1841,18 +1862,18 @@ export default function Dashboard() {
                                   )
                                 }
                               />
-                              <span className="ml-3 text-gray-700 font-medium">
+                              <span className="ml-3 text-xs sm:text-sm text-gray-700 font-medium">
                                 Receive email notifications
                               </span>
                             </label>
                           </div>
                         </div>
-                        <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-6 border border-green-100">
-                          <label className="block text-sm font-semibold text-gray-700 mb-3">
+                        <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-4 sm:p-6 border border-green-100">
+                          <label className="block text-sm sm:text-base font-semibold text-gray-700 mb-3">
                             Profile Visibility
                           </label>
                           <select
-                            className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 font-medium"
+                            className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 font-medium text-xs sm:text-sm py-2 sm:py-3"
                             value={settings.profileVisibility}
                             onChange={(e) =>
                               handleSettingsChange(
@@ -1866,12 +1887,12 @@ export default function Dashboard() {
                             <option value="friends">Friends Only</option>
                           </select>
                         </div>
-                        <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl p-6 border border-purple-100">
-                          <label className="block text-sm font-semibold text-gray-700 mb-3">
+                        <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl p-4 sm:p-6 border border-purple-100">
+                          <label className="block text-sm sm:text-base font-semibold text-gray-700 mb-3">
                             Language
                           </label>
                           <select
-                            className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 font-medium"
+                            className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 font-medium text-xs sm:text-sm py-2 sm:py-3"
                             value={settings.language}
                             onChange={(e) =>
                               handleSettingsChange("language", e.target.value)
@@ -1974,7 +1995,7 @@ export default function Dashboard() {
                             <FaFile className="mx-auto h-12 w-12 text-gray-400" />
                             <h3 className="mt-2 text-sm font-medium text-gray-900">No projects found</h3>
                             <p className="mt-1 text-sm text-gray-500">
-                              You don't have any active projects with documents.
+                              You don&apos;t have any active projects with documents.
                             </p>
                           </div>
                         )}

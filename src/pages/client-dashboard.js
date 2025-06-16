@@ -1509,22 +1509,24 @@ export default function ClientDashboard() {
               <FaMoneyBillWave className="mr-1" />${project.budget}
             </div>
           </div>
-          <div className="flex items-center space-x-2">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center space-y-2 sm:space-y-0 sm:space-x-2">
             <button
               onClick={() => handleViewProject(project.id)}
-              className="text-blue-600 hover:text-blue-700"
+              className="inline-flex items-center justify-center px-3 py-2 border border-transparent text-xs sm:text-sm font-medium rounded-md text-blue-600 bg-blue-50 hover:bg-blue-100 w-full sm:w-auto"
               title="View Project"
             >
-              <FaEye className="w-5 h-5" />
+              <FaEye className="mr-1 text-xs sm:text-sm" />
+              View
             </button>
             {project.status === "in-progress" && (
               <button
                 onClick={() => handleCompleteProject(project.id)}
-                className="inline-flex items-center px-3 py-1 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700"
+                className="inline-flex items-center justify-center px-3 py-2 border border-transparent text-xs sm:text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 w-full sm:w-auto"
                 title="Mark as Complete"
               >
-                <FaCheckCircle className="mr-1" />
-                Mark Complete
+                <FaCheckCircle className="mr-1 text-xs sm:text-sm" />
+                <span className="hidden sm:inline">Mark Complete</span>
+                <span className="sm:hidden">Complete</span>
               </button>
             )}
             {!project.clientReviewGiven && (
@@ -1536,25 +1538,26 @@ export default function ClientDashboard() {
                     freelancer: project.freelancer
                   });
                 }}
-                className="inline-flex items-center px-3 py-1 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
+                className="inline-flex items-center justify-center px-3 py-2 border border-transparent text-xs sm:text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 w-full sm:w-auto"
                 title="Leave Review"
               >
-                <FaStar className="mr-1" />
+                <FaStar className="mr-1 text-xs sm:text-sm" />
                 Review
               </button>
             )}
             {project.clientReviewGiven && (
-              <div className="inline-flex items-center px-3 py-1 border border-gray-200 text-sm font-medium rounded-md text-gray-700 bg-gray-50">
-                <FaCheckCircle className="mr-1 text-green-500" />
+              <div className="inline-flex items-center justify-center px-3 py-2 border border-gray-200 text-xs sm:text-sm font-medium rounded-md text-gray-700 bg-gray-50 w-full sm:w-auto">
+                <FaCheckCircle className="mr-1 text-green-500 text-xs sm:text-sm" />
                 Reviewed
               </div>
             )}
             <button
               onClick={() => handleDeleteProject(project.id)}
-              className="text-red-600 hover:text-red-700"
+              className="inline-flex items-center justify-center px-3 py-2 border border-transparent text-xs sm:text-sm font-medium rounded-md text-red-600 bg-red-50 hover:bg-red-100 w-full sm:w-auto"
               title="Delete Project"
             >
-              <FaTrash className="w-5 h-5" />
+              <FaTrash className="mr-1 text-xs sm:text-sm" />
+              Delete
             </button>
           </div>
         </div>
@@ -1568,15 +1571,15 @@ export default function ClientDashboard() {
         <title>Client Dashboard | Student Freelance Platform</title>
       </Head>
 
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 pb-12">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 pb-8 sm:pb-12">
         {/* Header */}
-        <div className="relative overflow-hidden pt-32 pb-12">
+        <div className="relative overflow-hidden pt-20 pb-8 md:pt-32 md:pb-12">
           <div className="absolute inset-0 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-500"></div>
           <div className="absolute inset-0 bg-black/20"></div>
-          <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex flex-col md:flex-row items-center justify-between">
-              <div className="flex items-center space-x-4">
-                <div className="h-20 w-20 rounded-full bg-white p-1 shadow-lg">
+          <div className="relative z-10 max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
+            <div className="flex flex-col items-center text-center md:flex-row md:items-center md:justify-between md:text-left">
+              <div className="flex flex-col items-center md:flex-row md:items-center md:space-x-4">
+                <div className="h-16 w-16 md:h-20 md:w-20 rounded-full bg-white p-1 shadow-lg mb-3 md:mb-0">
                   <img
                     src={profileData?.profileImage || "/default-avatar.png"}
                     alt="Profile"
@@ -1584,51 +1587,58 @@ export default function ClientDashboard() {
                   />
                 </div>
                 <div>
-                  <h1 className="text-2xl font-bold text-white drop-shadow-md">
+                  <h1 className="text-xl md:text-2xl font-bold text-white drop-shadow-md mb-1">
                     {profileData?.fullName || "Your Name"}
                   </h1>
-                  <p className="text-white/90 font-medium drop-shadow-sm">
+                  <p className="text-sm md:text-base text-white/90 font-medium drop-shadow-sm">
                     {profileData?.companyName || "Company Name"}
                   </p>
                 </div>
               </div>
-              <div className="mt-4 md:mt-0 flex space-x-4">
-                <NotificationCenter userType="client" />
-                <button
-                  onClick={handleEditProfile}
-                  className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-semibold rounded-lg text-indigo-700 bg-white hover:bg-indigo-50 shadow-lg transition-all duration-200"
-                >
-                  <FaEdit className="mr-2" />
-                  Edit Profile
-                </button>
-                <button
-                  onClick={handleCreateProject}
-                  className="inline-flex items-center px-4 py-2 border border-white/20 text-sm font-semibold rounded-lg text-white bg-white/20 hover:bg-white/30 backdrop-blur-sm transition-all duration-200"
-                >
-                  <FaPlusCircle className="mr-2" />
-                  New Project
-                </button>
-                <button
-                  onClick={() => router.push("/messages")}
-                  className="inline-flex items-center px-4 py-2 border border-white/20 text-sm font-semibold rounded-lg text-white bg-white/20 hover:bg-white/30 backdrop-blur-sm transition-all duration-200"
-                >
-                  <FaEnvelope className="mr-2" />
-                  Messages
-                </button>
+              <div className="mt-6 md:mt-0 w-full md:w-auto">
+                <div className="flex justify-center md:justify-end mb-3 md:mb-0">
+                  <NotificationCenter userType="client" />
+                </div>
+                <div className="grid grid-cols-3 gap-2 max-w-xs sm:max-w-sm md:max-w-none mx-auto">
+                  <button
+                    onClick={handleEditProfile}
+                    className="inline-flex items-center justify-center px-2 sm:px-3 md:px-4 py-2 sm:py-3 border border-transparent text-xs sm:text-sm font-semibold rounded-lg text-indigo-700 bg-white hover:bg-indigo-50 shadow-lg transition-all duration-200"
+                  >
+                    <FaEdit className="text-sm sm:mr-1 md:mr-2" />
+                    <span className="hidden sm:inline ml-1">Edit Profile</span>
+                    <span className="sm:hidden sr-only">Edit</span>
+                  </button>
+                  <button
+                    onClick={handleCreateProject}
+                    className="inline-flex items-center justify-center px-2 sm:px-3 md:px-4 py-2 sm:py-3 border border-white/20 text-xs sm:text-sm font-semibold rounded-lg text-white bg-white/20 hover:bg-white/30 backdrop-blur-sm transition-all duration-200"
+                  >
+                    <FaPlusCircle className="text-sm sm:mr-1 md:mr-2" />
+                    <span className="hidden sm:inline ml-1">New Project</span>
+                    <span className="sm:hidden sr-only">New</span>
+                  </button>
+                  <button
+                    onClick={() => router.push("/messages")}
+                    className="inline-flex items-center justify-center px-2 sm:px-3 md:px-4 py-2 sm:py-3 border border-white/20 text-xs sm:text-sm font-semibold rounded-lg text-white bg-white/20 hover:bg-white/30 backdrop-blur-sm transition-all duration-200"
+                  >
+                    <FaEnvelope className="text-sm sm:mr-1 md:mr-2" />
+                    <span className="hidden sm:inline ml-1">Messages</span>
+                    <span className="sm:hidden sr-only">Msg</span>
+                  </button>
+                </div>
               </div>
             </div>
           </div>
         </div>
 
         {/* Main Content */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-8">
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 lg:gap-8">
             {/* Left Sidebar */}
-            <div className="lg:col-span-1">
+            <div className="lg:col-span-1 order-2 lg:order-1">
               <div className="bg-white rounded-xl shadow-md overflow-hidden">
-                <div className="p-6">
+                <div className="p-4 sm:p-6">
                   <div className="flex items-center justify-between mb-4">
-                    <h2 className="text-lg font-semibold text-gray-900">
+                    <h2 className="text-base sm:text-lg font-semibold text-gray-900">
                       Quick Stats
                     </h2>
                     <button
@@ -1640,26 +1650,26 @@ export default function ClientDashboard() {
                       <FaSearch className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
                     </button>
                   </div>
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <span className="text-gray-600">Total Projects</span>
-                      <span className="font-semibold">
+                  <div className="grid grid-cols-2 lg:grid-cols-1 gap-3 lg:gap-4">
+                    <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between p-3 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg">
+                      <span className="text-xs sm:text-sm text-gray-600 font-medium mb-1 lg:mb-0">Total Projects</span>
+                      <span className="font-bold text-blue-600 text-lg sm:text-xl">
                         {stats.totalProjects}
                       </span>
                     </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-gray-600">Active Projects</span>
-                      <span className="font-semibold">
+                    <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between p-3 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg">
+                      <span className="text-xs sm:text-sm text-gray-600 font-medium mb-1 lg:mb-0">Active</span>
+                      <span className="font-bold text-green-600 text-lg sm:text-xl">
                         {stats.activeProjects}
                       </span>
                     </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-gray-600">Total Spent</span>
-                      <span className="font-semibold">${stats.totalSpent}</span>
+                    <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between p-3 bg-gradient-to-r from-yellow-50 to-orange-50 rounded-lg">
+                      <span className="text-xs sm:text-sm text-gray-600 font-medium mb-1 lg:mb-0">Total Spent</span>
+                      <span className="font-bold text-orange-600 text-base sm:text-lg">${stats.totalSpent}</span>
                     </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-gray-600">Pending Proposals</span>
-                      <span className="font-semibold">
+                    <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between p-3 bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg">
+                      <span className="text-xs sm:text-sm text-gray-600 font-medium mb-1 lg:mb-0">Pending</span>
+                      <span className="font-bold text-purple-600 text-base sm:text-lg">
                         {stats.pendingProposals}
                       </span>
                     </div>
@@ -1667,12 +1677,12 @@ export default function ClientDashboard() {
                 </div>
               </div>
 
-              <div className="mt-6 bg-white rounded-xl shadow-md overflow-hidden">
-                <div className="p-6">
-                  <h2 className="text-lg font-semibold text-gray-900 mb-4">
+              <div className="mt-4 lg:mt-6 bg-white rounded-xl shadow-md overflow-hidden">
+                <div className="p-4 sm:p-6">
+                  <h2 className="text-base sm:text-lg font-semibold text-gray-900 mb-4">
                     Recent Activity
                   </h2>
-                  <div className="space-y-4">
+                  <div className="space-y-3 sm:space-y-4">
                     {notifications.slice(0, 5).map((notification) => (
                       <div
                         key={notification.id}
@@ -1680,7 +1690,7 @@ export default function ClientDashboard() {
                       >
                         <div className="flex-shrink-0">
                           <div className="h-8 w-8 rounded-full bg-indigo-100 flex items-center justify-center">
-                            <FaBell className="text-indigo-600" />
+                            <FaBell className="text-indigo-600 text-sm" />
                           </div>
                         </div>
                         <div>
@@ -1699,11 +1709,11 @@ export default function ClientDashboard() {
             </div>
 
             {/* Main Content Area */}
-            <div className="lg:col-span-3">
+            <div className="lg:col-span-3 order-1 lg:order-2">
               {/* Tabs */}
-              <div className="bg-white rounded-xl shadow-md overflow-hidden mb-8">
+              <div className="bg-white rounded-xl shadow-md overflow-hidden mb-4 lg:mb-8">
                 <div className="border-b border-gray-200">
-                  <nav className="flex -mb-px">
+                  <nav className="flex -mb-px overflow-x-auto scrollbar-hide px-1 sm:px-0">
                     {["overview", "projects", "proposals", "reviews", "history", "settings"].map(
                       (tab) => (
                         <button
@@ -1711,26 +1721,35 @@ export default function ClientDashboard() {
                           onClick={() => setActiveTab(tab)}
                           className={`${
                             activeTab === tab
-                              ? "border-indigo-500 text-indigo-600"
+                              ? "border-indigo-500 text-indigo-600 bg-indigo-50"
                               : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-                          } whitespace-nowrap py-4 px-6 border-b-2 font-medium text-sm capitalize relative`}
+                          } whitespace-nowrap py-3 px-2 sm:px-4 md:px-6 border-b-2 font-semibold text-xs sm:text-sm capitalize relative flex-shrink-0 min-w-0 transition-colors duration-200`}
                         >
                           {tab === "settings" ? (
-                            <span className="flex items-center">
-                              <FaCog className="mr-2" />
-                              {tab}
+                            <span className="flex items-center justify-center">
+                              <FaCog className="text-sm sm:mr-1 md:mr-2" />
+                              <span className="hidden sm:inline ml-1">{tab}</span>
                             </span>
                           ) : tab === "proposals" ? (
-                            <span className="flex items-center">
-                              {tab}
+                            <span className="flex items-center justify-center">
+                              <span className="hidden sm:inline">{tab}</span>
+                              <span className="sm:hidden text-xs">Props</span>
                               {stats.pendingProposals > 0 && (
-                                <span className="ml-2 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white bg-red-500 rounded-full">
-                                  {stats.pendingProposals > 10 ? "10+" : stats.pendingProposals}
+                                <span className="ml-1 sm:ml-2 inline-flex items-center justify-center px-1.5 py-0.5 text-xs font-bold leading-none text-white bg-red-500 rounded-full min-w-[18px] h-[18px]">
+                                  {stats.pendingProposals > 9 ? "9+" : stats.pendingProposals}
                                 </span>
                               )}
                             </span>
                           ) : (
-                            tab
+                            <span className="text-center">
+                              <span className="hidden sm:inline">{tab}</span>
+                              <span className="sm:hidden text-xs">
+                                {tab === "overview" ? "Home" : 
+                                 tab === "projects" ? "Projects" :
+                                 tab === "reviews" ? "Reviews" :
+                                 tab === "history" ? "History" : tab}
+                              </span>
+                            </span>
                           )}
                         </button>
                       )
@@ -1741,27 +1760,27 @@ export default function ClientDashboard() {
 
               {/* Tab Content */}
               <div className="bg-white rounded-xl shadow-md overflow-hidden">
-                <div className="p-6">
+                <div className="p-4 sm:p-6">
                   {activeTab === "overview" && (
-                    <div className="space-y-8">
+                    <div className="space-y-4 sm:space-y-6 lg:space-y-8">
                       {/* Stats Grid */}
-                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
                         <motion.div
                           initial={{ opacity: 0, y: 20 }}
                           animate={{ opacity: 1, y: 0 }}
-                          className="bg-white rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow"
+                          className="bg-gradient-to-br from-blue-50 to-indigo-100 rounded-xl shadow-sm p-4 hover:shadow-md transition-shadow border border-blue-100"
                         >
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <p className="text-sm font-medium text-gray-500">
-                                Total Projects
-                              </p>
-                              <p className="text-2xl font-semibold text-gray-900 mt-1">
+                          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
+                            <div className="mb-2 lg:mb-0">
+                              <div className="flex items-center mb-1">
+                                <FaProjectDiagram className="w-4 h-4 text-blue-600 mr-2" />
+                                <p className="text-xs sm:text-sm font-medium text-gray-600">
+                                  Total
+                                </p>
+                              </div>
+                              <p className="text-xl sm:text-2xl font-bold text-blue-700">
                                 {stats.totalProjects}
                               </p>
-                            </div>
-                            <div className="p-3 rounded-full bg-blue-100 text-blue-600">
-                              <FaProjectDiagram className="w-6 h-6" />
                             </div>
                           </div>
                         </motion.div>
@@ -1770,19 +1789,19 @@ export default function ClientDashboard() {
                           initial={{ opacity: 0, y: 20 }}
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ delay: 0.1 }}
-                          className="bg-white rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow"
+                          className="bg-gradient-to-br from-green-50 to-emerald-100 rounded-xl shadow-sm p-4 hover:shadow-md transition-shadow border border-green-100"
                         >
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <p className="text-sm font-medium text-gray-500">
-                                Active Projects
-                              </p>
-                              <p className="text-2xl font-semibold text-gray-900 mt-1">
+                          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
+                            <div className="mb-2 lg:mb-0">
+                              <div className="flex items-center mb-1">
+                                <FaRegCheckCircle className="w-4 h-4 text-green-600 mr-2" />
+                                <p className="text-xs sm:text-sm font-medium text-gray-600">
+                                  Active
+                                </p>
+                              </div>
+                              <p className="text-xl sm:text-2xl font-bold text-green-700">
                                 {stats.activeProjects}
                               </p>
-                            </div>
-                            <div className="p-3 rounded-full bg-green-100 text-green-600">
-                              <FaRegCheckCircle className="w-6 h-6" />
                             </div>
                           </div>
                         </motion.div>
@@ -1791,19 +1810,19 @@ export default function ClientDashboard() {
                           initial={{ opacity: 0, y: 20 }}
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ delay: 0.2 }}
-                          className="bg-white rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow"
+                          className="bg-gradient-to-br from-yellow-50 to-orange-100 rounded-xl shadow-sm p-4 hover:shadow-md transition-shadow border border-yellow-100"
                         >
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <p className="text-sm font-medium text-gray-500">
-                                Total Spent
-                              </p>
-                              <p className="text-2xl font-semibold text-gray-900 mt-1">
+                          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
+                            <div className="mb-2 lg:mb-0">
+                              <div className="flex items-center mb-1">
+                                <FaMoneyBillWave className="w-4 h-4 text-yellow-600 mr-2" />
+                                <p className="text-xs sm:text-sm font-medium text-gray-600">
+                                  Spent
+                                </p>
+                              </div>
+                              <p className="text-lg sm:text-xl font-bold text-yellow-700">
                                 ${stats.totalSpent}
                               </p>
-                            </div>
-                            <div className="p-3 rounded-full bg-yellow-100 text-yellow-600">
-                              <FaMoneyBillWave className="w-6 h-6" />
                             </div>
                           </div>
                         </motion.div>
@@ -1812,38 +1831,38 @@ export default function ClientDashboard() {
                           initial={{ opacity: 0, y: 20 }}
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ delay: 0.3 }}
-                          className="bg-white rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow"
+                          className="bg-gradient-to-br from-purple-50 to-pink-100 rounded-xl shadow-sm p-4 hover:shadow-md transition-shadow border border-purple-100"
                         >
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <p className="text-sm font-medium text-gray-500">
-                                Pending Proposals
-                              </p>
-                              <p className="text-2xl font-semibold text-gray-900 mt-1">
+                          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
+                            <div className="mb-2 lg:mb-0">
+                              <div className="flex items-center mb-1">
+                                <FaRegClock className="w-4 h-4 text-purple-600 mr-2" />
+                                <p className="text-xs sm:text-sm font-medium text-gray-600">
+                                  Pending
+                                </p>
+                              </div>
+                              <p className="text-xl sm:text-2xl font-bold text-purple-700">
                                 {stats.pendingProposals}
                               </p>
-                            </div>
-                            <div className="p-3 rounded-full bg-purple-100 text-purple-600">
-                              <FaRegClock className="w-6 h-6" />
                             </div>
                           </div>
                         </motion.div>
                       </div>
 
                       {/* Charts Section */}
-                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                      <div className="space-y-4 sm:space-y-6">
                         {/* Project Timeline Chart */}
                         <motion.div
                           initial={{ opacity: 0, y: 20 }}
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ delay: 0.4 }}
-                          className="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-xl shadow-lg p-6 border border-indigo-100"
+                          className="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-xl shadow-lg p-4 sm:p-6 border border-indigo-100"
                         >
-                          <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center">
-                            <FaChartLine className="mr-2 text-indigo-600" />
+                          <h3 className="text-base sm:text-lg font-bold text-gray-900 mb-3 sm:mb-4 flex items-center">
+                            <FaChartLine className="mr-2 text-indigo-600 text-sm sm:text-base" />
                             Project Timeline
                           </h3>
-                          <div className="h-80">
+                          <div className="h-48 sm:h-64">
                             <ResponsiveContainer width="100%" height="100%">
                               <AreaChart
                                 data={[
@@ -1897,13 +1916,13 @@ export default function ClientDashboard() {
                           initial={{ opacity: 0, y: 20 }}
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ delay: 0.5 }}
-                          className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl shadow-lg p-6 border border-green-100"
+                          className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl shadow-lg p-4 sm:p-6 border border-green-100"
                         >
-                          <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center">
-                            <FaMoneyBillWave className="mr-2 text-green-600" />
+                          <h3 className="text-base sm:text-lg font-bold text-gray-900 mb-3 sm:mb-4 flex items-center">
+                            <FaMoneyBillWave className="mr-2 text-green-600 text-sm sm:text-base" />
                             Budget Distribution
                           </h3>
-                          <div className="h-80">
+                          <div className="h-48 sm:h-64">
                             <ResponsiveContainer width="100%" height="100%">
                               <PieChart>
                                 <Pie
@@ -1942,13 +1961,13 @@ export default function ClientDashboard() {
                           initial={{ opacity: 0, y: 20 }}
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ delay: 0.6 }}
-                          className="bg-gradient-to-br from-yellow-50 to-orange-50 rounded-xl shadow-lg p-6 border border-yellow-100"
+                          className="bg-gradient-to-br from-yellow-50 to-orange-50 rounded-xl shadow-lg p-4 sm:p-6 border border-yellow-100"
                         >
-                          <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center">
-                            <FaChartBar className="mr-2 text-orange-600" />
+                          <h3 className="text-base sm:text-lg font-bold text-gray-900 mb-3 sm:mb-4 flex items-center">
+                            <FaChartBar className="mr-2 text-orange-600 text-sm sm:text-base" />
                             Monthly Spending
                           </h3>
-                          <div className="h-80">
+                          <div className="h-48 sm:h-64">
                             <ResponsiveContainer width="100%" height="100%">
                               <BarChart
                                 data={[
@@ -1994,13 +2013,13 @@ export default function ClientDashboard() {
                           initial={{ opacity: 0, y: 20 }}
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ delay: 0.7 }}
-                          className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl shadow-lg p-6 border border-purple-100"
+                          className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl shadow-lg p-4 sm:p-6 border border-purple-100"
                         >
-                          <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center">
-                            <FaChartPie className="mr-2 text-purple-600" />
+                          <h3 className="text-base sm:text-lg font-bold text-gray-900 mb-3 sm:mb-4 flex items-center">
+                            <FaChartPie className="mr-2 text-purple-600 text-sm sm:text-base" />
                             Project Success Rate
                           </h3>
-                          <div className="h-80">
+                          <div className="h-48 sm:h-64">
                             <ResponsiveContainer width="100%" height="100%">
                               <RadialBarChart 
                                 cx="50%" 
@@ -2036,16 +2055,16 @@ export default function ClientDashboard() {
                   )}
 
                   {activeTab === "projects" && (
-                    <div className="space-y-6">
-                      <div className="flex justify-between items-center">
-                        <h2 className="text-lg font-semibold text-gray-900">
+                    <div className="space-y-4 sm:space-y-6">
+                      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center space-y-3 sm:space-y-0">
+                        <h2 className="text-lg sm:text-xl font-semibold text-gray-900">
                           My Projects
                         </h2>
                         <button
                           onClick={handleCreateProject}
-                          className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
+                          className="inline-flex items-center justify-center px-3 sm:px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 w-full sm:w-auto"
                         >
-                          <FaPlusCircle className="mr-2" />
+                          <FaPlusCircle className="mr-2 text-sm" />
                           New Project
                         </button>
                       </div>
@@ -2086,13 +2105,13 @@ export default function ClientDashboard() {
                   )}
 
                   {activeTab === "proposals" && (
-                    <div className="space-y-6">
-                      <div className="flex justify-between items-center">
-                        <h2 className="text-lg font-semibold text-gray-900">
+                    <div className="space-y-4 sm:space-y-6">
+                      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center space-y-2 sm:space-y-0">
+                        <h2 className="text-lg sm:text-xl font-semibold text-gray-900">
                           Project Proposals
                         </h2>
-                        <div className="text-m text-gray-500">
-                          Total Proposals: {proposals.length}
+                        <div className="text-sm sm:text-base text-gray-500">
+                          Total: {proposals.length}
                         </div>
                       </div>
                       <div className="space-y-4">
@@ -2114,23 +2133,23 @@ export default function ClientDashboard() {
                                 key={proposal.id}
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
-                                className="border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow"
+                                className="border border-gray-200 rounded-lg p-4 sm:p-6 hover:shadow-md transition-shadow"
                               >
-                                <div className="flex justify-between items-start">
+                                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start space-y-3 sm:space-y-0">
                                   <div className="flex-1">
-                                    <h3 className="text-lg font-medium text-gray-900">
+                                    <h3 className="text-base sm:text-lg font-medium text-gray-900">
                                       {proposal.project?.title || "Untitled Project"}
                                     </h3>
-                                    <div className="mt-1 flex items-center text-sm text-gray-500">
-                                      <FaUser className="mr-1" />
+                                    <div className="mt-1 flex items-center text-xs sm:text-sm text-gray-500">
+                                      <FaUser className="mr-1 text-xs sm:text-sm" />
                                       {proposal.freelancerName || "Freelancer Profile"}
                                     </div>
-                                    <p className="mt-2 text-sm text-gray-600">
+                                    <p className="mt-2 text-xs sm:text-sm text-gray-600">
                                       {proposal.content}
                                     </p>
                                   </div>
                                   <span
-                                    className={`ml-4 px-3 py-1 rounded-full text-sm font-medium ${
+                                    className={`self-start sm:ml-4 px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-medium ${
                                       proposal.status === "pending"
                                         ? "bg-yellow-100 text-yellow-800"
                                         : proposal.status === "accepted"
@@ -2156,28 +2175,29 @@ export default function ClientDashboard() {
                                       {proposal.duration || "Not specified"} days
                                     </div>
                                   </div>
-                                  <div className="flex items-center space-x-2">
+                                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center space-y-2 sm:space-y-0 sm:space-x-2">
                                     {proposal.status === "pending" && (
                                       <>
                                         <button
                                           onClick={() => handleAcceptProposal(proposal)}
-                                          className="inline-flex items-center px-3 py-1 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700"
+                                          className="inline-flex items-center justify-center px-3 py-2 border border-transparent text-xs sm:text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 w-full sm:w-auto"
                                         >
-                                          <FaCheckCircle className="mr-1" />
+                                          <FaCheckCircle className="mr-1 text-xs sm:text-sm" />
                                           Accept
                                         </button>
                                         <button
                                           onClick={() => router.push(`/freelancers/${proposal.freelancerId}`)}
-                                          className="inline-flex items-center px-3 py-1 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
+                                          className="inline-flex items-center justify-center px-3 py-2 border border-transparent text-xs sm:text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 w-full sm:w-auto"
                                         >
-                                          <FaEye className="mr-1" />
-                                          See Profile
+                                          <FaEye className="mr-1 text-xs sm:text-sm" />
+                                          <span className="hidden sm:inline">See Profile</span>
+                                          <span className="sm:hidden">Profile</span>
                                         </button>
                                         <button
                                           onClick={() => handleRemoveProposal(proposal.id)}
-                                          className="inline-flex items-center px-3 py-1 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700"
+                                          className="inline-flex items-center justify-center px-3 py-2 border border-transparent text-xs sm:text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 w-full sm:w-auto"
                                         >
-                                          <FaTrash className="mr-1" />
+                                          <FaTrash className="mr-1 text-xs sm:text-sm" />
                                           Remove
                                         </button>
                                       </>
@@ -2185,9 +2205,9 @@ export default function ClientDashboard() {
                                     {proposal.status === "accepted" && (
                                       <button
                                         onClick={() => router.push("/messages")}
-                                        className="inline-flex items-center px-3 py-1 border border-transparent text-sm font-medium rounded-md text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700"
+                                        className="inline-flex items-center justify-center px-3 py-2 border border-transparent text-xs sm:text-sm font-medium rounded-md text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 w-full sm:w-auto"
                                       >
-                                        <FaEnvelope className="mr-1" />
+                                        <FaEnvelope className="mr-1 text-xs sm:text-sm" />
                                         Message
                                       </button>
                                     )}
@@ -2202,13 +2222,13 @@ export default function ClientDashboard() {
                   )}
 
                   {activeTab === "reviews" && (
-                    <div className="space-y-6">
-                      <div className="flex justify-between items-center">
-                        <h2 className="text-lg font-semibold text-gray-900">
+                    <div className="space-y-4 sm:space-y-6">
+                      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center space-y-2 sm:space-y-0">
+                        <h2 className="text-lg sm:text-xl font-semibold text-gray-900">
                           Project Reviews
                         </h2>
-                        <div className="text-m text-gray-500">
-                          Total Reviews: {reviews.length}
+                        <div className="text-sm sm:text-base text-gray-500">
+                          Total: {reviews.length}
                         </div>
                       </div>
                       <div className="space-y-4">
@@ -2228,23 +2248,24 @@ export default function ClientDashboard() {
                               key={review.id}
                               initial={{ opacity: 0, y: 20 }}
                               animate={{ opacity: 1, y: 0 }}
-                              className="border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow"
+                              className="border border-gray-200 rounded-lg p-4 sm:p-6 hover:shadow-md transition-shadow"
                             >
-                              <div className="flex justify-between items-start">
+                              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start space-y-3 sm:space-y-0">
                                 <div className="flex-1">
-                                  <h3 className="text-lg font-medium text-gray-900">
+                                  <h3 className="text-base sm:text-lg font-medium text-gray-900">
                                     {review.projectTitle}
                                   </h3>
-                                  <p className="text-sm text-gray-500 mt-1">
+                                  <p className="text-xs sm:text-sm text-gray-500 mt-1">
                                     {review.content}
                                   </p>
                                 </div>
-                                <div className="flex items-center space-x-2">
+                                <div className="flex items-center">
                                   <button
                                     onClick={() => router.push(`/projects/${review.projectId}`)}
-                                    className="text-blue-600 hover:text-blue-700"
+                                    className="inline-flex items-center justify-center px-3 py-2 border border-transparent text-xs sm:text-sm font-medium rounded-md text-blue-600 bg-blue-50 hover:bg-blue-100 w-full sm:w-auto"
                                   >
-                                    <FaEye className="w-5 h-5" />
+                                    <FaEye className="mr-1 text-xs sm:text-sm" />
+                                    View Project
                                   </button>
                                 </div>
                               </div>
@@ -2260,31 +2281,31 @@ export default function ClientDashboard() {
                   )}
 
                   {activeTab === "settings" && (
-                    <div className="space-y-6">
-                      <h2 className="text-lg font-semibold text-gray-900 mb-4">
+                    <div className="space-y-4 sm:space-y-6">
+                      <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-4">
                         Account Settings
                       </h2>
-                      <div className="space-y-4">
+                      <div className="space-y-4 sm:space-y-6">
                         <div>
-                          <h3 className="text-md font-medium text-gray-900 mb-2">
+                          <h3 className="text-base sm:text-lg font-medium text-gray-900 mb-3 sm:mb-4">
                             Notification Settings
                           </h3>
-                          <div className="space-y-4">
+                          <div className="space-y-3 sm:space-y-4">
                             {Object.entries(notificationSettings).map(
                               ([key, value]) => (
                                 <div
                                   key={key}
-                                  className="flex items-center justify-between"
+                                  className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-2 sm:space-y-0 p-3 sm:p-4 bg-gray-50 rounded-lg"
                                 >
-                                  <div>
-                                    <label className="text-sm font-medium text-gray-700">
+                                  <div className="flex-1">
+                                    <label className="text-sm sm:text-base font-medium text-gray-700">
                                       {key
                                         .replace(/([A-Z])/g, " $1")
                                         .replace(/^./, (str) =>
                                           str.toUpperCase()
                                         )}
                                     </label>
-                                    <p className="text-sm text-gray-500">
+                                    <p className="text-xs sm:text-sm text-gray-500 mt-1">
                                       Receive notifications for{" "}
                                       {key
                                         .replace(/([A-Z])/g, " $1")
@@ -2314,25 +2335,25 @@ export default function ClientDashboard() {
                         </div>
 
                         <div>
-                          <h3 className="text-md font-medium text-gray-900 mb-2">
+                          <h3 className="text-base sm:text-lg font-medium text-gray-900 mb-3 sm:mb-4">
                             Privacy Settings
                           </h3>
-                          <div className="space-y-4">
+                          <div className="space-y-3 sm:space-y-4">
                             {Object.entries(privacySettings).map(
                               ([key, value]) => (
                                 <div
                                   key={key}
-                                  className="flex items-center justify-between"
+                                  className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-2 sm:space-y-0 p-3 sm:p-4 bg-gray-50 rounded-lg"
                                 >
-                                  <div>
-                                    <label className="text-sm font-medium text-gray-700">
+                                  <div className="flex-1">
+                                    <label className="text-sm sm:text-base font-medium text-gray-700">
                                       {key
                                         .replace(/([A-Z])/g, " $1")
                                         .replace(/^./, (str) =>
                                           str.toUpperCase()
                                         )}
                                     </label>
-                                    <p className="text-sm text-gray-500">
+                                    <p className="text-xs sm:text-sm text-gray-500 mt-1">
                                       {key === "allowFreelancersContact"
                                         ? "Allow freelancers to contact you directly"
                                         : key === "makeProfilePublic"
